@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { authService, userService, tokenService, emailService } = require('../services');
+const { authService, userService, tokenService, emailService, sendQr } = require('../services');
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -47,6 +47,37 @@ const verifyEmail = catchAsync(async (req, res) => {
   res.status(httpStatus.NO_CONTENT).send();
 });
 
+const checkWaAuth = catchAsync(async (req, res) => {
+  // eslint-disable-next-line no-undef
+  client
+    .getState()
+    .then((data) => {
+      console.log(data);
+      res.send(data);
+    })
+    .catch((err) => {
+      if (err) {
+        res.send('DISCONNECTED');
+      }
+    });
+});
+
+const getQR = catchAsync(async (req, res) => {
+  console.log('typeof sendQr', typeof authService.sendQr);
+  // eslint-disable-next-line no-undef
+  client
+    .getState()
+    .then((data) => {
+      if (data) {
+        res.write('<html><body><h2>Already Authenticated</h2></body></html>');
+        res.end();
+      } else authService.sendQr(res);
+    })
+    .catch(() => {
+      authService.sendQr(res);
+    });
+});
+
 module.exports = {
   register,
   login,
@@ -56,4 +87,6 @@ module.exports = {
   resetPassword,
   sendVerificationEmail,
   verifyEmail,
+  checkWaAuth,
+  getQR,
 };

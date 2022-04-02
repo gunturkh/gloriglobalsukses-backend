@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const fs = require('fs');
 const tokenService = require('./token.service');
 const userService = require('./user.service');
 const Token = require('../models/token.model');
@@ -90,10 +91,44 @@ const verifyEmail = async (verifyEmailToken) => {
   }
 };
 
+/**
+ * Get QR
+ * @param {string} res
+ * @returns {string}
+ */
+const sendQr = (res) => {
+  fs.readFile('./src/components/last.qr', (err, lastQR) => {
+    if (!err && lastQR) {
+      const page = `<html>
+                        <body>
+                            <script type="module">
+                            </script>
+                            <div id="qrcode"></div>
+                            <script type="module">
+                                import QrCreator from "https://cdn.jsdelivr.net/npm/qr-creator/dist/qr-creator.es6.min.js";
+                                let container = document.getElementById("qrcode");
+                                QrCreator.render({
+                                    text: "${lastQR}",
+                                    radius: 0.5, // 0.0 to 0.5
+                                    ecLevel: "H", // L, M, Q, H
+                                    fill: "#536DFE", // foreground color
+                                    background: null, // color or null for transparent
+                                    size: 256, // in pixels
+                                }, container);
+                            </script>
+                        </body>
+                    </html>`;
+      res.set('Content-Type', 'text/html');
+      res.send(page);
+      // res.end();
+    }
+  });
+};
 module.exports = {
   loginUserWithEmailAndPassword,
   logout,
   refreshAuth,
   resetPassword,
   verifyEmail,
+  sendQr,
 };

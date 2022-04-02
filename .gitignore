@@ -13,3 +13,6 @@ coverage
 
 # Dockerfile
 Dockerfile
+
+# wwebjs
+.wwebjs_auth
