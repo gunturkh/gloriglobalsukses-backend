@@ -63,7 +63,6 @@ const checkWaAuth = catchAsync(async (req, res) => {
 });
 
 const getQR = catchAsync(async (req, res) => {
-  console.log('typeof sendQr', typeof authService.sendQr);
   // eslint-disable-next-line no-undef
   client
     .getState()

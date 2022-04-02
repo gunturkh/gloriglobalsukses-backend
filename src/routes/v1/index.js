@@ -3,6 +3,7 @@ const authRoute = require('./auth.route');
 const userRoute = require('./user.route');
 const docsRoute = require('./docs.route');
 const wwebRoute = require('./wweb.route');
+const trackingDataRoute = require('./trackingData.route');
 const config = require('../../config/config');
 
 const router = express.Router();
@@ -15,6 +16,10 @@ const defaultRoutes = [
   {
     path: '/users',
     route: userRoute,
+  },
+  {
+    path: '/tracking',
+    route: trackingDataRoute,
   },
   {
     path: '/wweb',

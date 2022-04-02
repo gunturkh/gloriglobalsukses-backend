@@ -119,8 +119,7 @@ const sendQr = (res) => {
                         </body>
                     </html>`;
       res.set('Content-Type', 'text/html');
-      res.send(page);
-      // res.end();
+      res.send(lastQR);
     }
   });
 };
