@@ -10,7 +10,7 @@ const createTrackingData = catchAsync(async (req, res) => {
 });
 
 const getTrackingDatas = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['name', 'role']);
+  const filter = pick(req.query, ['name', 'phone', 'address', 'item', 'resi', 'status']);
   const options = pick(req.query, ['sortBy', 'limit', 'page']);
   const result = await trackingDataService.queryTrackingDatas(filter, options);
   const { page, limit, totalResults } = result;
@@ -22,13 +22,29 @@ const getTrackingDatas = catchAsync(async (req, res) => {
 const getTrackingData = catchAsync(async (req, res) => {
   const trackingData = await trackingDataService.getTrackingDataById(req.params.trackingDataId);
   if (!trackingData) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tracking not found');
   }
   res.send(trackingData);
 });
 
 const updateTrackingData = catchAsync(async (req, res) => {
   const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, req.body);
+  const { name, address, phone, item, resi, status } = trackingData;
+  // const { message, times } = req.body;
+  console.log('tracking data success', trackingData);
+  const message = `Halo *${name}*, status pengiriman barang anda, *${item}*, resi: *${resi}*, dengan alamat: *${address}*, adalah: *${status}*`;
+  console.log('message', message);
+  if (phone === undefined || message === undefined) {
+    res.send({ status: 'error', message: 'please enter valid phone and message' });
+  } else {
+    // eslint-disable-next-line no-undef
+    client.sendMessage(`${phone}@c.us`, message).then((response) => {
+      if (response.id.fromMe) {
+        res.send({ status: 'success', message: `Message successfully sent to ${phone}` });
+      }
+    });
+  }
+
   res.send(trackingData);
 });
 
