@@ -28,6 +28,7 @@ const getTrackingData = catchAsync(async (req, res) => {
 });
 
 const updateTrackingData = catchAsync(async (req, res) => {
+  console.log('trackingDataId', req.params.trackingDataId);
   const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, req.body);
   const { name, address, phone, item, resi, status } = trackingData;
   // const { message, times } = req.body;
@@ -40,12 +41,12 @@ const updateTrackingData = catchAsync(async (req, res) => {
     // eslint-disable-next-line no-undef
     client.sendMessage(`${phone}@c.us`, message).then((response) => {
       if (response.id.fromMe) {
-        res.send({ status: 'success', message: `Message successfully sent to ${phone}` });
+        res.send({ status: 'success', message: `Message successfully sent to ${phone}`, data: trackingData });
       }
     });
   }
 
-  res.send(trackingData);
+  // res.send(trackingData);
 });
 
 const deleteTrackingData = catchAsync(async (req, res) => {
