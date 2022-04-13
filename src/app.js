@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable no-undef */
 const express = require('express');
-const axios = require('axios');
 const fs = require('fs');
 const helmet = require('helmet');
 const xss = require('xss-clean');
@@ -57,9 +56,9 @@ app.use(cors());
 app.options('*', cors());
 
 // whatsapp web client
-client.on('qr', (qr) => {
+client.on('qr', async (qr) => {
   console.log('qr', qr);
-  fs.writeFileSync('./src/last.qr', qr);
+  await fs.writeFileSync('./src/last.qr', qr);
 });
 
 client.on('authenticated', () => {
