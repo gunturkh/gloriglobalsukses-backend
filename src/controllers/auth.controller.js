@@ -75,7 +75,12 @@ const getQR = catchAsync(async (req, res) => {
       authService.sendQr(res);
     });
 });
-
+let qrcode = '';
+// eslint-disable-next-line no-undef
+client.on('qr', async (qr) => {
+  qrcode = qr;
+  console.log('qr code', qrcode);
+});
 module.exports = {
   register,
   login,

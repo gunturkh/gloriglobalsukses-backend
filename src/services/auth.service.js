@@ -97,7 +97,7 @@ const verifyEmail = async (verifyEmailToken) => {
  * @returns {string}
  */
 const sendQr = (res) => {
-  fs.readFile('./src/components/last.qr', (err, lastQR) => {
+  fs.readFile('./src/last.qr', (err, lastQR) => {
     if (!err && lastQR) {
       const page = `<html>
                         <body>
