@@ -59,7 +59,7 @@ app.options('*', cors());
 // whatsapp web client
 client.on('qr', (qr) => {
   console.log('qr', qr);
-  fs.writeFileSync('./src/components/last.qr', qr);
+  fs.writeFileSync('./src/last.qr', qr);
 });
 
 client.on('authenticated', () => {
@@ -67,7 +67,7 @@ client.on('authenticated', () => {
   authed = true;
 
   try {
-    fs.unlinkSync('./src/components/last.qr');
+    fs.unlinkSync('./src/last.qr');
   } catch (err) {}
 });
 
