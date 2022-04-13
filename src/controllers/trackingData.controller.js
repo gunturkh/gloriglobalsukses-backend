@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const PDFDocument = require('pdfkit');
 const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
@@ -6,7 +7,19 @@ const { trackingDataService } = require('../services');
 
 const createTrackingData = catchAsync(async (req, res) => {
   const trackingData = await trackingDataService.createTrackingData(req.body);
-  res.status(httpStatus.CREATED).send(trackingData);
+  const { name, address, phone, item, resi, status } = trackingData;
+  const message = `Halo *${name}*, status pengiriman barang anda, *${item}*, resi: *${resi}*, dengan alamat: *${address}*, adalah: *${status}*`;
+  if (phone === undefined || message === undefined) {
+    res.send({ status: 'error', message: 'please enter valid phone and message' });
+  } else {
+    // eslint-disable-next-line no-undef
+    client.sendMessage(`${phone}@c.us`, message).then((response) => {
+      if (response.id.fromMe) {
+        res.send({ status: 'success', message: `Message successfully sent to ${phone}`, data: trackingData });
+      }
+    });
+  }
+  // res.status(httpStatus.CREATED).send(trackingData);
 });
 
 const getTrackingDatas = catchAsync(async (req, res) => {
@@ -27,14 +40,42 @@ const getTrackingData = catchAsync(async (req, res) => {
   res.send(trackingData);
 });
 
+const printTrackingDatatoPDF = catchAsync(async (req, res) => {
+  console.log('params', req.params);
+  const trackingData = await trackingDataService.getTrackingDataById(req.params.trackingDataId);
+  if (!trackingData) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Tracking not found');
+  }
+  // console.log('trackingData', trackingData);
+  const { name, item, resi, address, phone, status } = trackingData;
+  const myDoc = new PDFDocument({ bufferPages: true });
+
+  const buffers = [];
+  myDoc.on('data', buffers.push.bind(buffers));
+  myDoc.on('end', () => {
+    const pdfData = Buffer.concat(buffers);
+    res
+      .writeHead(200, {
+        'Content-Length': Buffer.byteLength(pdfData),
+        'Content-Type': 'application/pdf',
+        'Content-disposition': 'attachment;filename=test.pdf',
+      })
+      .end(pdfData);
+  });
+
+  myDoc.font('Times-Roman').fontSize(12).text(name);
+  myDoc.font('Times-Roman').fontSize(12).text(item);
+  myDoc.font('Times-Roman').fontSize(12).text(resi);
+  myDoc.font('Times-Roman').fontSize(12).text(address);
+  myDoc.font('Times-Roman').fontSize(12).text(phone);
+  myDoc.font('Times-Roman').fontSize(12).text(status);
+  myDoc.end();
+});
+
 const updateTrackingData = catchAsync(async (req, res) => {
-  console.log('trackingDataId', req.params.trackingDataId);
   const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, req.body);
   const { name, address, phone, item, resi, status } = trackingData;
-  // const { message, times } = req.body;
-  console.log('tracking data success', trackingData);
   const message = `Halo *${name}*, status pengiriman barang anda, *${item}*, resi: *${resi}*, dengan alamat: *${address}*, adalah: *${status}*`;
-  console.log('message', message);
   if (phone === undefined || message === undefined) {
     res.send({ status: 'error', message: 'please enter valid phone and message' });
   } else {
@@ -60,4 +101,5 @@ module.exports = {
   getTrackingData,
   updateTrackingData,
   deleteTrackingData,
+  printTrackingDatatoPDF,
 };

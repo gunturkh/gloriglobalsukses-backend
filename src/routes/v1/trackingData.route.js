@@ -16,6 +16,10 @@ router
   .get(auth('getTrackingData'), validate(trackingDataValidation.getTrackingDatas), trackingDataController.getTrackingDatas);
 
 router
+  .route('/getpdf/:trackingDataId')
+  .get(validate(trackingDataValidation.getPDF), trackingDataController.printTrackingDatatoPDF);
+
+router
   .route('/:trackingDataId')
   .get(auth('getTrackingData'), validate(trackingDataValidation.getTrackingData), trackingDataController.getTrackingData)
   .put(

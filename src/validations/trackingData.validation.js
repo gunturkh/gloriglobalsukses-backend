@@ -32,6 +32,12 @@ const getTrackingData = {
   }),
 };
 
+const getTrackingDataPDF = {
+  params: Joi.object().keys({
+    url: Joi.string(),
+  }),
+};
+
 const updateTrackingData = {
   params: Joi.object().keys({
     trackingDataId: Joi.required().custom(objectId),
@@ -59,6 +65,7 @@ module.exports = {
   createTrackingData,
   getTrackingDatas,
   getTrackingData,
+  getTrackingDataPDF,
   updateTrackingData,
   deleteTrackingData,
 };

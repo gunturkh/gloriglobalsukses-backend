@@ -22,7 +22,11 @@ const ApiError = require('./utils/ApiError');
 process.title = 'whatsapp-node-api';
 global.client = new Client({
   authStrategy: new LocalAuth(),
-  puppeteer: { headless: true },
+  puppeteer: {
+    headless: true,
+    defaultViewport: null,
+    args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+  },
 });
 global.authed = false;
 const app = express();
