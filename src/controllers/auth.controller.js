@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
-const { authService, userService, tokenService, emailService, sendQr } = require('../services');
+const { authService, userService, tokenService, emailService } = require('../services');
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -52,7 +52,6 @@ const checkWaAuth = catchAsync(async (req, res) => {
   client
     .getState()
     .then((data) => {
-      console.log(data);
       res.send(data);
     })
     .catch((err) => {
@@ -68,7 +67,7 @@ const getQR = catchAsync(async (req, res) => {
     .getState()
     .then((data) => {
       if (data) {
-        res.write('<html><body><h2>Already Authenticated</h2></body></html>');
+        res.write('authenticated');
         res.end();
       } else authService.sendQr(res);
     })
