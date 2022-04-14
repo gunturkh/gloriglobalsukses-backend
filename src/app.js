@@ -17,6 +17,7 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
+const { QR } = require('./models');
 
 process.title = 'whatsapp-node-api';
 global.client = new Client({
@@ -52,13 +53,25 @@ app.use(mongoSanitize());
 app.use(compression());
 
 // enable cors
-app.use(cors());
+app.use(
+  cors({
+    origin: ['https://admin-gororchid.netlify.app', 'http://localhost:3000'],
+    optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+  })
+);
 app.options('*', cors());
 
 // whatsapp web client
 client.on('qr', async (qr) => {
   console.log('qr', qr);
-  await fs.writeFileSync('./src/last.qr', qr);
+  // await fs.writeFileSync('./src/last.qr', qr);
+  const foundQr = await QR.findOne({ name: 'qr' });
+  if (!foundQr) {
+    QR.create({ qr, name: 'qr' });
+  }
+  Object.assign(foundQr, { qr, name: 'qr' });
+  await foundQr.save();
+  return foundQr;
 });
 
 client.on('authenticated', () => {

@@ -1,6 +1,7 @@
 const httpStatus = require('http-status');
 const catchAsync = require('../utils/catchAsync');
 const { authService, userService, tokenService, emailService } = require('../services');
+const { QR } = require('../models');
 
 const register = catchAsync(async (req, res) => {
   const user = await userService.createUser(req.body);
@@ -62,18 +63,23 @@ const checkWaAuth = catchAsync(async (req, res) => {
 });
 
 const getQR = catchAsync(async (req, res) => {
+  // console.log('fineQR', findQR);
   // eslint-disable-next-line no-undef
   client
     .getState()
-    .then((data) => {
+    .then(async (data) => {
       if (data) {
-        res.write('authenticated');
-        res.end();
-      } else authService.sendQr(res);
+        res.status('200').send({ message: 'authenticated' });
+      } else {
+        const qr = await QR.findOne({ name: 'qr' });
+        return res.status('200').send({ message: 'qr code', data: qr });
+      }
     })
     .catch(() => {
-      authService.sendQr(res);
+      const qr = QR.findOne({ name: 'qr' });
+      return res.status('200').send({ message: 'qr code', data: qr });
     });
+  // return res.status('200').send({ message: 'ok', qr: foundQR });
 });
 
 module.exports = {

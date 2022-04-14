@@ -8,6 +8,10 @@ const qrSchema = mongoose.Schema(
       required: true,
       index: true,
     },
+    name: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,
