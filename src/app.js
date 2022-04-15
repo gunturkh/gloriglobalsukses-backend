@@ -55,7 +55,7 @@ app.use(compression());
 // enable cors
 app.use(
   cors({
-    origin: ['https://admin-gororchid.netlify.app', 'http://localhost:3000'],
+    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   })
 );
