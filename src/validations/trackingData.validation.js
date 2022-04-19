@@ -9,6 +9,11 @@ const createTrackingData = {
     item: Joi.string(),
     resi: Joi.string(),
     status: Joi.string(),
+    salesOrder: Joi.string(),
+    label: Joi.string(),
+    delay: Joi.boolean(),
+    createdAt: Joi.string(),
+    updatedAt: Joi.string(),
   }),
 };
 
@@ -20,6 +25,11 @@ const getTrackingDatas = {
     item: Joi.string(),
     resi: Joi.string(),
     status: Joi.string(),
+    salesOrder: Joi.string(),
+    label: Joi.string(),
+    delay: Joi.boolean(),
+    createdAt: Joi.string(),
+    updatedAt: Joi.string(),
     sortBy: Joi.string(),
     limit: Joi.number().integer(),
     page: Joi.number().integer(),
@@ -51,6 +61,11 @@ const updateTrackingData = {
       item: Joi.string(),
       resi: Joi.string(),
       status: Joi.string(),
+      salesOrder: Joi.string(),
+      label: Joi.string(),
+      delay: Joi.boolean(),
+      createdAt: Joi.string(),
+      updatedAt: Joi.string(),
     })
     .min(1),
 };

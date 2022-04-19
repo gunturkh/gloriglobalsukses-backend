@@ -28,6 +28,18 @@ const trackingDataSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    salesOrder: {
+      type: String,
+      required: true,
+    },
+    label: {
+      type: String,
+      // required: true,
+    },
+    delay: {
+      type: Boolean,
+      // required: true,
+    },
   },
   {
     timestamps: true,
