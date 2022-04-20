@@ -13,11 +13,15 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 
 const exitHandler = () => {
   if (server) {
+    // eslint-disable-next-line no-undef
+    client.destroy();
     server.close(() => {
       logger.info('Server closed');
       process.exit(1);
     });
   } else {
+    // eslint-disable-next-line no-undef
+    client.destroy();
     process.exit(1);
   }
 };
@@ -34,6 +38,8 @@ process.on('SIGTERM', () => {
   logger.info('SIGTERM received');
   if (server) {
     server.close();
+    // eslint-disable-next-line no-undef
+    client.destroy();
   }
 });
 
