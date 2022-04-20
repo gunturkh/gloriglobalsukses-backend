@@ -17,6 +17,7 @@ router.post('/verify-email', validate(authValidation.verifyEmail), authControlle
 
 router.get('/check-wa-auth', authController.checkWaAuth);
 router.get('/getqr', authController.getQR);
+router.get('/wa-logout', authController.waLogout);
 
 module.exports = router;
 

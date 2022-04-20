@@ -10,6 +10,7 @@ const cors = require('cors');
 const passport = require('passport');
 const httpStatus = require('http-status');
 const { Client, LocalAuth } = require('whatsapp-web.js');
+const cron = require('node-cron');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -61,6 +62,23 @@ app.use(
 );
 app.options('*', cors());
 
+// ...
+
+// cron jobs
+// const task = cron.schedule('1 * * * *', function () {
+//   const phone = 62881080001747;
+//   const message = 'Hello, this is a test message from the cron job';
+//   logger.info(`cron job to phone: ${phone} & message: ${message}`);
+//   // eslint-disable-next-line no-undef
+//   // client.sendMessage(`${phone}@c.us`, message).then((response) => {
+//   //   if (response.id.fromMe) {
+//   //     logger.info({ status: 'success', message: `Message successfully sent to ${phone}` });
+//   //   }
+//   // });
+// });
+
+// task.start();
+
 // whatsapp web client
 client.on('qr', async (qr) => {
   console.log('qr', qr);
@@ -90,6 +108,22 @@ client.on('auth_failure', () => {
 
 client.on('ready', () => {
   console.log('Client is ready!');
+  // Schedule tasks to be run on the server.
+  cron.schedule('0,15,30,45 * * * * *', function () {
+    console.log(`running a task every 15 seconds => ${new Date()}`);
+    const phone = 62881080001747;
+    const message = 'Hello, this is a test message from the cron job';
+    console.log(`cron job to phone: ${phone} & message: ${message}`);
+    // eslint-disable-next-line no-undef
+    client
+      .sendMessage(`${phone}@c.us`, message)
+      .then((response) => {
+        if (response.id.fromMe) {
+          console.log({ status: 'success', message: `Message successfully sent to ${phone}` });
+        }
+      })
+      .catch((err) => console.log(err));
+  });
 });
 
 client.on('message', async (msg) => {
@@ -105,7 +139,9 @@ client.on('message', async (msg) => {
 client.on('disconnected', () => {
   console.log('disconnected');
 });
+
 client.initialize();
+// task.start();
 
 // jwt authentication
 app.use(passport.initialize());

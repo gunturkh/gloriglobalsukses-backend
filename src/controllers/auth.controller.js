@@ -82,6 +82,25 @@ const getQR = catchAsync(async (req, res) => {
   // return res.status('200').send({ message: 'ok', qr: foundQR });
 });
 
+const waLogout = catchAsync(async (req, res) => {
+  // eslint-disable-next-line no-undef
+  // client
+  //   .getState()
+  //   .then(async (data) => {
+  //     if (data) {
+  //       // eslint-disable-next-line no-undef
+  //       await client.logout();
+  //       // eslint-disable-next-line no-undef
+  //       await client.destroy();
+  //       return res.status('200').send({ message: 'wa logout success' });
+  //     }
+  //     return res.status('200').send({ message: 'wa logout failed' });
+  //   })
+  //   .catch(() => {
+  //     return res.status('200').send({ message: 'wa logout failed' });
+  //   });
+});
+
 module.exports = {
   register,
   login,
@@ -93,4 +112,5 @@ module.exports = {
   verifyEmail,
   checkWaAuth,
   getQR,
+  waLogout,
 };

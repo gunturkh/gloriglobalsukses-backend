@@ -36,3 +36,10 @@ process.on('SIGTERM', () => {
     server.close();
   }
 });
+
+process.on('SIGINT', async () => {
+  logger.info('(SIGINT) Shutting down...');
+  // eslint-disable-next-line no-undef
+  await client.destroy();
+  process.exit(0);
+});
