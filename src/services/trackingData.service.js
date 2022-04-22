@@ -1,4 +1,5 @@
 const httpStatus = require('http-status');
+const moment = require('moment');
 const { TrackingData } = require('../models');
 const ApiError = require('../utils/ApiError');
 
@@ -73,6 +74,78 @@ const deleteTrackingDataById = async (trackingDataId) => {
   return trackingData;
 };
 
+const messageFormatter = (trackingData) => {
+  const {
+    name,
+    address,
+    phone,
+    item,
+    resi,
+    status,
+    salesOrder,
+    delay,
+    createdAt,
+    estimatedDate,
+    remainingDownPaymentAmount,
+  } = trackingData;
+  let message = '';
+  switch (status) {
+    case 'SUDAH DIPESAN DAN BARANG READY':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
+        createdAt
+      ).format(
+        'DD MMMM YYYY'
+      )} dan dalam proses *produksi 7 hari*. Kemungkinan akan mengalami keterlambatan pengiriman dikarenakan adanya proses produksi tersebut. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
+      break;
+
+    case 'SUDAH DIPESAN DAN BARANG PRODUKSI':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
+        createdAt
+      ).format(
+        'DD MMMM YYYY'
+      )}, sudah dalam proses pengiriman ke Gudang China. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`;
+      break;
+
+    case 'SUDAH DIKIRIM VENDOR KE GUDANG CHINA':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dikirim dengan nomor *resi china lokal ${resi}* dan akan tiba di Gudang China dalam waktu 4-5 hari. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
+      break;
+
+    case 'SUDAH TIBA DIGUDANG CHINA':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah tiba di Gudang China dengan *${resi}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
+      break;
+
+    case 'BARANG LOADING KE BATAM':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
+        estimatedDate
+      ).format('DD MMMM YYYY')}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
+      break;
+
+    case 'BARANG KOMPLIT ITEM & BELUM CLEAR DP':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* tiba di Gudang Jakarta pada tanggal  *${moment(
+        estimatedDate
+      ).format(
+        'DD MMMM YYYY'
+      )}* dan akan segera diproses pengiriman ke alamat anda. Mohon untuk segera melakukan pelunasan *sisa DP 30%* sebesar *IDR ${remainingDownPaymentAmount}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
+      break;
+
+    case 'BARANG KOMPLIT ITEM & SUDAH CLEAR DP':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* tiba di Gudang Jakarta pada tanggal  *${moment(
+        estimatedDate
+      ).format(
+        'DD MMMM YYYY'
+      )}* dan sudah dikirimkan dengan nomor resi *${resi}* .Jangan lupa Untuk membuat video unboxing jika barang telah sampai untuk menghindari kesalahan dalam pengiriman. Ditunggu orderan selanjutnya, Terima kasih.`;
+      break;
+
+    case 'DELAY - RANDOM CHECK CHINA':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* akan mengalami kemunduran estimasi tiba di Indonesia dikarenakan adanya *Random Check* di Custom China maka dari itu untuk estimasi selanjutnya akan kami informasikan kembali. Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu. Terima kasih.`;
+      break;
+
+    default:
+      break;
+  }
+  return message;
+};
+
 module.exports = {
   createTrackingData,
   queryTrackingDatas,
@@ -80,4 +153,5 @@ module.exports = {
   getTrackingDataByPhone,
   updateTrackingDataById,
   deleteTrackingDataById,
+  messageFormatter,
 };

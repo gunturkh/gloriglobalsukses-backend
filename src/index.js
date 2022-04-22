@@ -14,14 +14,14 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 const exitHandler = () => {
   if (server) {
     // eslint-disable-next-line no-undef
-    client.destroy();
+    if (client) client.destroy();
     server.close(() => {
       logger.info('Server closed');
       process.exit(1);
     });
   } else {
     // eslint-disable-next-line no-undef
-    client.destroy();
+    if (client) client.destroy();
     process.exit(1);
   }
 };
@@ -39,13 +39,13 @@ process.on('SIGTERM', () => {
   if (server) {
     server.close();
     // eslint-disable-next-line no-undef
-    client.destroy();
+    if (client) client.destroy();
   }
 });
 
-process.on('SIGINT', async () => {
+process.on('SIGINT', () => {
   logger.info('(SIGINT) Shutting down...');
   // eslint-disable-next-line no-undef
-  await client.destroy();
+  if (client) client.destroy();
   process.exit(0);
 });

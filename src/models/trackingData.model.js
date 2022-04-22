@@ -38,7 +38,30 @@ const trackingDataSchema = mongoose.Schema(
     },
     delay: {
       type: Boolean,
+      default: false,
       // required: true,
+    },
+    sendMessageTimestamp: {
+      type: Number,
+    },
+    sendMessageStatus: {
+      type: Boolean,
+      default: false,
+    },
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    read: {
+      type: Boolean,
+      default: false,
+    },
+    estimatedDate: {
+      type: Date,
+    },
+    remainingDownPaymentAmount: {
+      type: Number,
     },
   },
   {

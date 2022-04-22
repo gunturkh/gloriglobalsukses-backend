@@ -36,8 +36,23 @@ const paginate = (schema) => {
     const page = options.page && parseInt(options.page, 10) > 0 ? parseInt(options.page, 10) : 1;
     const skip = (page - 1) * limit;
 
-    const countPromise = this.countDocuments(filter).exec();
-    let docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit);
+    const modifiedFilter = Object.keys(filter).reduce((acc, key) => {
+      if (typeof filter[key] === 'boolean') {
+        acc[key] = filter[key];
+      } else {
+        // eslint-disable-next-line security/detect-non-literal-regexp
+        acc[key] = new RegExp(`${filter[key]}`, 'i');
+      }
+      return acc;
+    }, {});
+    console.log('modifiedFilter', modifiedFilter);
+    // const countPromise = this.countDocuments(filter).exec();
+    const countPromise = this.countDocuments(modifiedFilter).exec();
+    countPromise.then((count) => {
+      console.log('count', count);
+    });
+    // let docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit);
+    let docsPromise = this.find(modifiedFilter).sort(sort).skip(skip).limit(limit);
 
     if (options.populate) {
       options.populate.split(',').forEach((populateOption) => {
