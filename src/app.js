@@ -94,6 +94,7 @@ const messageFormatter = (trackingData) => {
     createdAt,
     estimatedDate,
     remainingDownPaymentAmount,
+    productionDays,
   } = trackingData;
   switch (status) {
     case 'SUDAH DIPESAN DAN BARANG READY':
@@ -101,14 +102,14 @@ const messageFormatter = (trackingData) => {
         createdAt
       ).format(
         'DD MMMM YYYY'
-      )} dan dalam proses *produksi 7 hari*. Kemungkinan akan mengalami keterlambatan pengiriman dikarenakan adanya proses produksi tersebut. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
+      )}, sudah dalam proses pengiriman ke Gudang China. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`;
 
     case 'SUDAH DIPESAN DAN BARANG PRODUKSI':
       return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
         createdAt
       ).format(
         'DD MMMM YYYY'
-      )}, sudah dalam proses pengiriman ke Gudang China. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`;
+      )} dan dalam proses *produksi ${productionDays} hari*. Kemungkinan akan mengalami keterlambatan pengiriman dikarenakan adanya proses produksi tersebut. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
 
     case 'SUDAH DIKIRIM VENDOR KE GUDANG CHINA':
       return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dikirim dengan nomor *resi china lokal ${resi}* dan akan tiba di Gudang China dalam waktu 4-5 hari. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
@@ -173,7 +174,7 @@ client.on('auth_failure', () => {
 client.on('ready', () => {
   console.log('Client is ready!');
   // Schedule tasks to be run on the server.
-  cron.schedule('5 * * * * *', async () => {
+  cron.schedule('10,20,30,40,50 * * * * * *', async () => {
     console.log(`running a task every 5 minute=> ${new Date()}`);
     // const phone = 62881080001747;
     // const message = 'Hello, this is a test message from the cron job';
@@ -192,9 +193,10 @@ client.on('ready', () => {
         const message = messageFormatter(trackingData);
         console.log('message', message);
         const trackingDataFoundById = await TrackingData.findById(trackingData.id);
-        client
+        await client
           .sendMessage(`${phone}@c.us`, message)
           .then(async (response) => {
+            console.log('response', response);
             if (response.id.fromMe) {
               console.log({ status: 'success', message: `Message successfully sent to ${phone} with message: ${message}` });
               if (trackingDataFoundById) {

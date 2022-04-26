@@ -63,6 +63,18 @@ const trackingDataSchema = mongoose.Schema(
     remainingDownPaymentAmount: {
       type: Number,
     },
+    customerOrderDate: {
+      type: Date,
+    },
+    orderArrivedToWarehouseDate: {
+      type: Date,
+    },
+    productionDays: {
+      type: Number,
+    },
+    daysToSendReminderFromCustomerOrderDate: {
+      type: Number,
+    },
   },
   {
     timestamps: true,

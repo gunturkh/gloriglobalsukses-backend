@@ -22,6 +22,8 @@ const exitHandler = () => {
   } else {
     // eslint-disable-next-line no-undef
     if (client) client.destroy();
+    // eslint-disable-next-line no-undef
+    else client.destroy();
     process.exit(1);
   }
 };
@@ -40,6 +42,8 @@ process.on('SIGTERM', () => {
     server.close();
     // eslint-disable-next-line no-undef
     if (client) client.destroy();
+    // eslint-disable-next-line no-undef
+    else client.destroy();
   }
 });
 
@@ -47,5 +51,7 @@ process.on('SIGINT', () => {
   logger.info('(SIGINT) Shutting down...');
   // eslint-disable-next-line no-undef
   if (client) client.destroy();
+  // eslint-disable-next-line no-undef
+  else client.destroy();
   process.exit(0);
 });
