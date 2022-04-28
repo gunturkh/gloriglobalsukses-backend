@@ -4,10 +4,35 @@ const pick = require('../utils/pick');
 const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { trackingDataService } = require('../services');
+const messageFormatter = require('../utils/messageFormatter');
 
 const createTrackingData = catchAsync(async (req, res) => {
   const trackingData = await trackingDataService.createTrackingData(req.body);
-  res.status(httpStatus.CREATED).send({ status: 'success', message: 'Success create tracking data', data: trackingData });
+  const { phone, setSendMessageNow } = trackingData;
+  console.log('trackingData created', trackingData);
+  if (setSendMessageNow) {
+    const { message } = messageFormatter(trackingData);
+    console.log({ message, phone });
+    if (phone === undefined || message === undefined) {
+      res.send({ status: 'error', message: 'please enter valid phone and message', data: null });
+    } else {
+      // eslint-disable-next-line no-undef
+      client
+        .sendMessage(`${phone}@c.us`, message)
+        .then(async (response) => {
+          if (response.id.fromMe) {
+            res
+              .status(httpStatus.CREATED)
+              .send({ status: 'success', message: 'Success create tracking data', data: trackingData });
+          }
+        })
+        .catch((err) => {
+          console.log('error when update tracking data', err);
+          res.status(httpStatus[500]).send({ status: 'error', message: `Failed create tracking data`, data: null });
+        });
+    }
+  } else
+    res.status(httpStatus.CREATED).send({ status: 'success', message: 'Success create tracking data', data: trackingData });
 });
 
 const getTrackingDatas = catchAsync(async (req, res) => {
@@ -24,7 +49,6 @@ const getTrackingDatas = catchAsync(async (req, res) => {
     'sendMessageStatus',
   ]);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
-  console.log('filter', filter);
   const result = await trackingDataService.queryTrackingDatas(filter, options);
   const { page, limit, totalResults } = result;
   res.set('Access-Control-Expose-Headers', 'Content-Range');
@@ -73,7 +97,29 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
 
 const updateTrackingData = catchAsync(async (req, res) => {
   const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, req.body);
-  res.send({ status: 'success', message: 'Success edit tracking data', data: trackingData });
+  const { phone, setSendMessageNow } = trackingData;
+  console.log('trackingData update', trackingData);
+  if (setSendMessageNow) {
+    const { message } = messageFormatter(trackingData);
+    console.log({ message, phone });
+    if (phone === undefined || message === undefined) {
+      res.send({ status: 'error', message: 'please enter valid phone and message', data: null });
+    } else {
+      // eslint-disable-next-line no-undef
+      client
+        .sendMessage(`${phone}@c.us`, message)
+        .then((response) => {
+          if (response.id.fromMe) {
+            res.send({ status: 'success', message: `Message successfully sent to ${phone}`, data: trackingData });
+          }
+        })
+        .catch((err) => {
+          console.log('error when update tracking data', err);
+          res.send({ status: 'error', message: `Message failed sent to ${phone}`, data: trackingData });
+        });
+    }
+  }
+  // res.send({ status: 'success', message: 'Success edit tracking data', data: trackingData });
 });
 
 const deleteTrackingData = catchAsync(async (req, res) => {

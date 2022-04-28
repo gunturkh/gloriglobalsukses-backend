@@ -1,0 +1,97 @@
+const moment = require('moment');
+
+const messageFormatter = (trackingData) => {
+  const {
+    // address,
+    // createdAt,
+    customerOrderDate,
+    // delay,
+    estimatedDate,
+    item,
+    name,
+    // phone,
+    productionDays,
+    remainingDownPaymentAmount,
+    resi,
+    salesOrder,
+    status,
+    daysToSendReminder,
+    setDaysReminderManually,
+    // setStatusManually,
+  } = trackingData;
+  switch (status) {
+    case 'SUDAH DIPESAN DAN BARANG READY':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
+          customerOrderDate
+        ).format(
+          'DD MMMM YYYY'
+        )}, sudah dalam proses pengiriman ke Gudang China. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+      };
+
+    case 'SUDAH DIPESAN DAN BARANG PRODUKSI':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
+          customerOrderDate
+        ).format(
+          'DD MMMM YYYY'
+        )} dan dalam proses *produksi ${productionDays} hari*. Kemungkinan akan mengalami keterlambatan pengiriman dikarenakan adanya proses produksi tersebut. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 7,
+      };
+
+    case 'SUDAH DIKIRIM VENDOR KE GUDANG CHINA':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dikirim dengan nomor *resi china lokal ${resi}* dan akan tiba di Gudang China dalam waktu 4-5 hari. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 4,
+      };
+
+    case 'SUDAH TIBA DIGUDANG CHINA':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah tiba di Gudang China dengan *${resi}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 3,
+      };
+
+    case 'BARANG LOADING KE BATAM':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
+          estimatedDate
+        ).format('DD MMMM YYYY')}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 7,
+      };
+
+    case 'BARANG KOMPLIT ITEM & BELUM CLEAR DP':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* tiba di Gudang Jakarta pada tanggal  *${moment(
+          estimatedDate
+        ).format(
+          'DD MMMM YYYY'
+        )}* dan akan segera diproses pengiriman ke alamat anda. Mohon untuk segera melakukan pelunasan *sisa DP 30%* sebesar *IDR ${remainingDownPaymentAmount}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+      };
+
+    case 'BARANG KOMPLIT ITEM & SUDAH CLEAR DP':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* tiba di Gudang Jakarta pada tanggal  *${moment(
+          estimatedDate
+        ).format(
+          'DD MMMM YYYY'
+        )}* dan sudah dikirimkan dengan nomor resi *${resi}* .Jangan lupa Untuk membuat video unboxing jika barang telah sampai untuk menghindari kesalahan dalam pengiriman. Ditunggu orderan selanjutnya, Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+      };
+
+    case 'DELAY - RANDOM CHECK CHINA':
+      return {
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* akan mengalami kemunduran estimasi tiba di Indonesia dikarenakan adanya *Random Check* di Custom China maka dari itu untuk estimasi selanjutnya akan kami informasikan kembali. Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+      };
+
+    default:
+      return {
+        message: status,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+      };
+  }
+};
+
+module.exports = messageFormatter;

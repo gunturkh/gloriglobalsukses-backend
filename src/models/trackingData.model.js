@@ -72,8 +72,20 @@ const trackingDataSchema = mongoose.Schema(
     productionDays: {
       type: Number,
     },
-    daysToSendReminderFromCustomerOrderDate: {
+    daysToSendReminder: {
       type: Number,
+    },
+    daysToSendReminderTimestamp: {
+      type: Number,
+    },
+    setDaysReminderManually: {
+      type: Boolean,
+    },
+    setStatusManually: {
+      type: Boolean,
+    },
+    setSendMessageNow: {
+      type: Boolean,
     },
   },
   {

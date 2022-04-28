@@ -20,13 +20,14 @@ const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
 const { QR, TrackingData } = require('./models');
+const messageFormatter = require('./utils/messageFormatter');
 // const { messageFormatter } = require('./services/trackingData.service');
 
 process.title = 'whatsapp-node-api';
 global.client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
-    headless: true,
+    headless: false,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
   },
@@ -81,69 +82,6 @@ app.options('*', cors());
 
 // task.start();
 
-const messageFormatter = (trackingData) => {
-  const {
-    name,
-    address,
-    phone,
-    item,
-    resi,
-    status,
-    salesOrder,
-    delay,
-    createdAt,
-    estimatedDate,
-    remainingDownPaymentAmount,
-    productionDays,
-  } = trackingData;
-  switch (status) {
-    case 'SUDAH DIPESAN DAN BARANG READY':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
-        createdAt
-      ).format(
-        'DD MMMM YYYY'
-      )}, sudah dalam proses pengiriman ke Gudang China. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`;
-
-    case 'SUDAH DIPESAN DAN BARANG PRODUKSI':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
-        createdAt
-      ).format(
-        'DD MMMM YYYY'
-      )} dan dalam proses *produksi ${productionDays} hari*. Kemungkinan akan mengalami keterlambatan pengiriman dikarenakan adanya proses produksi tersebut. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
-
-    case 'SUDAH DIKIRIM VENDOR KE GUDANG CHINA':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dikirim dengan nomor *resi china lokal ${resi}* dan akan tiba di Gudang China dalam waktu 4-5 hari. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
-
-    case 'SUDAH TIBA DIGUDANG CHINA':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah tiba di Gudang China dengan *${resi}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
-
-    case 'BARANG LOADING KE BATAM':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
-        estimatedDate
-      ).format('DD MMMM YYYY')}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
-
-    case 'BARANG KOMPLIT ITEM & BELUM CLEAR DP':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* tiba di Gudang Jakarta pada tanggal  *${moment(
-        estimatedDate
-      ).format(
-        'DD MMMM YYYY'
-      )}* dan akan segera diproses pengiriman ke alamat anda. Mohon untuk segera melakukan pelunasan *sisa DP 30%* sebesar *IDR ${remainingDownPaymentAmount}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
-
-    case 'BARANG KOMPLIT ITEM & SUDAH CLEAR DP':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* tiba di Gudang Jakarta pada tanggal  *${moment(
-        estimatedDate
-      ).format(
-        'DD MMMM YYYY'
-      )}* dan sudah dikirimkan dengan nomor resi *${resi}* .Jangan lupa Untuk membuat video unboxing jika barang telah sampai untuk menghindari kesalahan dalam pengiriman. Ditunggu orderan selanjutnya, Terima kasih.`;
-
-    case 'DELAY - RANDOM CHECK CHINA':
-      return `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* akan mengalami kemunduran estimasi tiba di Indonesia dikarenakan adanya *Random Check* di Custom China maka dari itu untuk estimasi selanjutnya akan kami informasikan kembali. Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu. Terima kasih.`;
-
-    default:
-      break;
-  }
-};
-
 // whatsapp web client
 client.on('qr', async (qr) => {
   console.log('qr', qr);
@@ -180,18 +118,23 @@ client.on('ready', () => {
     // const message = 'Hello, this is a test message from the cron job';
     // console.log(`cron job to phone: ${phone} & message: ${message}`);
     const comparatorTimestamp = parseInt(moment().format('x'), 10);
-    const foundTrackingData = await TrackingData.find({
+    console.log('comparatorTimestamp', comparatorTimestamp);
+    const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
       sendMessageTimestamp: { $lte: comparatorTimestamp },
       sendMessageStatus: false,
+      setSendMessageNow: false,
     });
-    console.log('foundTrackingData', foundTrackingData);
-    if (foundTrackingData.length > 0) {
-      await foundTrackingData.forEach(async (trackingData) => {
+    // const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
+    //   daysToSendReminder: { $lte: comparatorTimestamp },
+    //   read: true,
+    // });
+    console.log('foundTrackingDataForSendingAutomaticMessage', foundTrackingDataForSendingAutomaticMessage);
+    if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
+      await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
         const { phone } = trackingData;
-        // const message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dikirim dengan nomor *resi china lokal ${resi}*, dengan alamat: *${address}*, adalah: *${status}* ${
         // eslint-disable-next-line no-undef
-        const message = messageFormatter(trackingData);
-        console.log('message', message);
+        const { message, daysToSendReminder } = messageFormatter(trackingData);
+        console.log({ message, daysToSendReminder });
         const trackingDataFoundById = await TrackingData.findById(trackingData.id);
         await client
           .sendMessage(`${phone}@c.us`, message)
@@ -209,7 +152,38 @@ client.on('ready', () => {
           .catch((err) => console.log(err));
       });
     }
+
+    // if (foundTrackingDataForUpdateReadStatus.length > 0) {
+    //   await foundTrackingDataForUpdateReadStatus.forEach(async (trackingData) => {
+    //     const trackingDataFoundById = await TrackingData.findById(trackingData.id);
+    //     if (trackingDataFoundById) {
+    //       console.log('foundTrackingDataForUpdateReadStatus', foundTrackingDataForUpdateReadStatus);
+    //       Object.assign(trackingDataFoundById, { ...trackingData, read: false });
+    //       await trackingDataFoundById.save();
+    //     }
+    //   });
+    // }
   });
+});
+
+cron.schedule('30 * * * * * *', async () => {
+  console.log(`checking tracking data read status every 30 seconds=> ${new Date()}`);
+  const comparatorTimestamp = parseInt(moment().format('x'), 10);
+  const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
+    daysToSendReminderTimestamp: { $lte: comparatorTimestamp },
+    read: true,
+  });
+
+  console.log('foundTrackingDataForUpdateReadStatus', foundTrackingDataForUpdateReadStatus);
+  if (foundTrackingDataForUpdateReadStatus.length > 0) {
+    await foundTrackingDataForUpdateReadStatus.forEach(async (trackingData) => {
+      const trackingDataFoundById = await TrackingData.findById(trackingData.id);
+      if (trackingDataFoundById) {
+        Object.assign(trackingDataFoundById, { ...trackingData, read: false });
+        await trackingDataFoundById.save();
+      }
+    });
+  }
 });
 
 client.on('message', async (msg) => {
