@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 /* eslint-disable no-undef */
 const express = require('express');
-const fs = require('fs');
+// const fs = require('fs');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
@@ -12,6 +12,8 @@ const httpStatus = require('http-status');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const moment = require('moment');
 const cron = require('node-cron');
+const http = require('http');
+const socketIo = require('socket.io');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -27,7 +29,8 @@ process.title = 'whatsapp-node-api';
 global.client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
-    headless: true,
+    // for dev make it false, for production make it true
+    headless: false,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
   },
@@ -83,87 +86,10 @@ app.options('*', cors());
 // task.start();
 
 // whatsapp web client
-client.on('qr', async (qr) => {
-  console.log('qr', qr);
-  // await fs.writeFileSync('./src/last.qr', qr);
-  const foundQr = await QR.findOne({ name: 'qr' });
-  if (!foundQr) {
-    QR.create({ qr, name: 'qr' });
-  }
-  Object.assign(foundQr, { qr, name: 'qr' });
-  await foundQr.save();
-  return foundQr;
-});
-
-client.on('authenticated', () => {
-  console.log('AUTH!');
-  authed = true;
-
-  try {
-    fs.unlinkSync('./src/last.qr');
-  } catch (err) {}
-});
 
 client.on('auth_failure', () => {
   console.log('AUTH Failed !');
   process.exit();
-});
-
-client.on('ready', () => {
-  console.log('Client is ready!');
-  // Schedule tasks to be run on the server.
-  cron.schedule('10,20,30,40,50 * * * * * *', async () => {
-    console.log(`running a task every 5 minute=> ${new Date()}`);
-    // const phone = 62881080001747;
-    // const message = 'Hello, this is a test message from the cron job';
-    // console.log(`cron job to phone: ${phone} & message: ${message}`);
-    const comparatorTimestamp = parseInt(moment().format('x'), 10);
-    console.log('comparatorTimestamp', comparatorTimestamp);
-    const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
-      sendMessageTimestamp: { $lte: comparatorTimestamp },
-      sendMessageStatus: false,
-      setSendMessageNow: false,
-    });
-    // const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
-    //   daysToSendReminder: { $lte: comparatorTimestamp },
-    //   read: true,
-    // });
-    console.log('foundTrackingDataForSendingAutomaticMessage', foundTrackingDataForSendingAutomaticMessage);
-    if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
-      await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
-        const { phone } = trackingData;
-        // eslint-disable-next-line no-undef
-        const { message, daysToSendReminder } = messageFormatter(trackingData);
-        console.log({ message, daysToSendReminder });
-        const trackingDataFoundById = await TrackingData.findById(trackingData.id);
-        await client
-          .sendMessage(`${phone}@c.us`, message)
-          .then(async (response) => {
-            console.log('response', response);
-            if (response.id.fromMe) {
-              console.log({ status: 'success', message: `Message successfully sent to ${phone} with message: ${message}` });
-              if (trackingDataFoundById) {
-                console.log('trackingDataFoundById', trackingDataFoundById);
-                Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true, read: false });
-                await trackingDataFoundById.save();
-              }
-            }
-          })
-          .catch((err) => console.log(err));
-      });
-    }
-
-    // if (foundTrackingDataForUpdateReadStatus.length > 0) {
-    //   await foundTrackingDataForUpdateReadStatus.forEach(async (trackingData) => {
-    //     const trackingDataFoundById = await TrackingData.findById(trackingData.id);
-    //     if (trackingDataFoundById) {
-    //       console.log('foundTrackingDataForUpdateReadStatus', foundTrackingDataForUpdateReadStatus);
-    //       Object.assign(trackingDataFoundById, { ...trackingData, read: false });
-    //       await trackingDataFoundById.save();
-    //     }
-    //   });
-    // }
-  });
 });
 
 cron.schedule('30 * * * * * *', async () => {
@@ -186,19 +112,42 @@ cron.schedule('30 * * * * * *', async () => {
   }
 });
 
-client.on('message', async (msg) => {
-  // if (config.webhook.enabled) {
-  //   if (msg.hasMedia) {
-  //     const attachmentData = await msg.downloadMedia();
-  //     // eslint-disable-next-line no-param-reassign
-  //     msg.attachmentData = attachmentData;
-  //   }
-  //   axios.post(config.webhook.path, { msg });
-  // }
+// client.on('message', async (msg) => {
+//   // if (config.webhook.enabled) {
+//   //   if (msg.hasMedia) {
+//   //     const attachmentData = await msg.downloadMedia();
+//   //     // eslint-disable-next-line no-param-reassign
+//   //     msg.attachmentData = attachmentData;
+//   //   }
+//   //   axios.post(config.webhook.path, { msg });
+//   // }
+// });
+
+client.on('disconnected', (reason) => {
+  console.log('Client was logged out', reason);
+  client.destroy();
+  client.initialize();
 });
-client.on('disconnected', () => {
-  console.log('disconnected');
-  // if (client) client.destroy();
+
+client.on('change_state', (state) => {
+  console.log('CHANGE STATE', state);
+});
+
+client.on('message_ack', (msg, ack) => {
+  /*
+      == ACK VALUES ==
+      ACK_ERROR: -1
+      ACK_PENDING: 0
+      ACK_SERVER: 1
+      ACK_DEVICE: 2
+      ACK_READ: 3
+      ACK_PLAYED: 4
+  */
+
+  if (ack === 3) {
+    // The message was read
+    console.log('Message read!');
+  }
 });
 
 client.initialize();
@@ -226,5 +175,98 @@ app.use(errorConverter);
 
 // handle error
 app.use(errorHandler);
+
+const server = http.createServer(app);
+
+const io = socketIo(server, {
+  transports: ['polling'],
+  cors: {
+    cors: {
+      origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
+    },
+  },
+});
+
+io.on('connection', (socket) => {
+  console.log('New client connected');
+
+  client.on('authenticated', () => {
+    console.log('AUTH!');
+    authed = true;
+    socket.emit('FromAPI', { data: '', message: 'authenticated' });
+  });
+
+  client.on('ready', () => {
+    console.log('Client is ready!');
+    // Schedule tasks to be run on the server.
+    cron.schedule('10,20,30,40,50 * * * * * *', async () => {
+      console.log(`running a task every 5 minute=> ${new Date()}`);
+      // const phone = 62881080001747;
+      // const message = 'Hello, this is a test message from the cron job';
+      // console.log(`cron job to phone: ${phone} & message: ${message}`);
+      const comparatorTimestamp = parseInt(moment().format('x'), 10);
+      console.log('Client info:', client.info);
+      socket.emit('ClientInfo', client.info);
+      console.log('comparatorTimestamp', comparatorTimestamp);
+      const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
+        sendMessageTimestamp: { $lte: comparatorTimestamp },
+        sendMessageStatus: false,
+        setSendMessageNow: false,
+      });
+      // const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
+      //   daysToSendReminder: { $lte: comparatorTimestamp },
+      //   read: true,
+      // });
+      console.log('foundTrackingDataForSendingAutomaticMessage', foundTrackingDataForSendingAutomaticMessage);
+      if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
+        await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
+          const { phone } = trackingData;
+          // eslint-disable-next-line no-undef
+          const { message, daysToSendReminder } = messageFormatter(trackingData);
+          console.log({ message, daysToSendReminder });
+          const trackingDataFoundById = await TrackingData.findById(trackingData.id);
+          await client
+            .sendMessage(`${phone}@c.us`, message)
+            .then(async (response) => {
+              console.log('response', response);
+              if (response.id.fromMe) {
+                console.log({
+                  status: 'success',
+                  message: `Message successfully sent to ${phone} with message: ${message}`,
+                });
+                if (trackingDataFoundById) {
+                  console.log('trackingDataFoundById', trackingDataFoundById);
+                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true, read: false });
+                  await trackingDataFoundById.save();
+                }
+              }
+            })
+            .catch((err) => console.log(err));
+        });
+      }
+    });
+  });
+
+  client.on('qr', async (qr) => {
+    console.log('qr', qr);
+    socket.emit('FromAPI', { data: qr, message: 'qr code' });
+    // await fs.writeFileSync('./src/last.qr', qr);
+    // const foundQr = await QR.findOne({ name: 'qr' });
+    // if (!foundQr) {
+    //   QR.create({ qr, name: 'qr' });
+    // }
+    // Object.assign(foundQr, { qr, name: 'qr' });
+    // await foundQr.save();
+    // return foundQr;
+  });
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+    // clearInterval(interval);
+  });
+});
+
+server.listen(4001, () => {
+  console.log(`Server up and running on port ${4001}`);
+});
 
 module.exports = app;
