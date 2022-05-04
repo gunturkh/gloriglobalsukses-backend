@@ -251,8 +251,8 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(4000, () => {
-  console.log(`Server up and running on port ${4000}`);
+server.listen(process.env.PORT, () => {
+  console.log(`Server up and running on port ${process.env.PORT || 4000}`);
 });
 
 module.exports = app;
