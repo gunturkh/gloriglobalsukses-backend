@@ -30,7 +30,7 @@ global.client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     // for dev make it false, for production make it true
-    headless: false,
+    headless: true,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
   },
@@ -123,11 +123,6 @@ cron.schedule('30 * * * * * *', async () => {
 //   // }
 // });
 
-client.on('disconnected', (reason) => {
-  console.log('Client was logged out', reason);
-  client.destroy();
-  client.initialize();
-});
 
 client.on('change_state', (state) => {
   console.log('CHANGE STATE', state);
@@ -196,16 +191,18 @@ io.on('connection', (socket) => {
     socket.emit('FromAPI', { data: '', message: 'authenticated' });
   });
 
+  client.on('disconnected', async (reason) => {
+    console.log('Client was logged out', reason);
+    await socket.emit('ClientInfo', {})
+    await client.destroy();
+    await client.initialize();
+  });
+
   client.on('ready', () => {
     console.log('Client is ready!');
     // Schedule tasks to be run on the server.
     cron.schedule('10,20,30,40,50 * * * * * *', async () => {
-      console.log(`running a task every 5 minute=> ${new Date()}`);
-      // const phone = 62881080001747;
-      // const message = 'Hello, this is a test message from the cron job';
-      // console.log(`cron job to phone: ${phone} & message: ${message}`);
       const comparatorTimestamp = parseInt(moment().format('x'), 10);
-      console.log('Client info:', client.info);
       socket.emit('ClientInfo', client.info);
       console.log('comparatorTimestamp', comparatorTimestamp);
       const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
@@ -213,10 +210,6 @@ io.on('connection', (socket) => {
         sendMessageStatus: false,
         setSendMessageNow: false,
       });
-      // const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
-      //   daysToSendReminder: { $lte: comparatorTimestamp },
-      //   read: true,
-      // });
       console.log('foundTrackingDataForSendingAutomaticMessage', foundTrackingDataForSendingAutomaticMessage);
       if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
         await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
@@ -250,14 +243,7 @@ io.on('connection', (socket) => {
   client.on('qr', async (qr) => {
     console.log('qr', qr);
     socket.emit('FromAPI', { data: qr, message: 'qr code' });
-    // await fs.writeFileSync('./src/last.qr', qr);
-    // const foundQr = await QR.findOne({ name: 'qr' });
-    // if (!foundQr) {
-    //   QR.create({ qr, name: 'qr' });
-    // }
-    // Object.assign(foundQr, { qr, name: 'qr' });
-    // await foundQr.save();
-    // return foundQr;
+    socket.emit('ClientInfo', {})
   });
   socket.on('disconnect', () => {
     console.log('Client disconnected');
@@ -265,8 +251,8 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(4001, () => {
-  console.log(`Server up and running on port ${4001}`);
+server.listen(4000, () => {
+  console.log(`Server up and running on port ${4000}`);
 });
 
 module.exports = app;
