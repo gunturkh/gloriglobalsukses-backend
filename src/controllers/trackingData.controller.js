@@ -77,7 +77,7 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
   const defaultMargin = 72;
   const primaryColor = "#FFE200";
   const secondaryColor = "#201E21";
-  const companyLogo = "assets/logo.jpg";
+  const companyLogo = "assets/logo.png";
   const buffers = [];
   myDoc.on('data', buffers.push.bind(buffers));
   myDoc.on('end', () => {
