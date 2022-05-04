@@ -16,7 +16,7 @@ router
   .get(auth('getTrackingData'), validate(trackingDataValidation.getTrackingDatas), trackingDataController.getTrackingDatas);
 
 router
-  .route('/getpdf/:trackingDataId')
+  .route('/getpdf/:trackingDataId/:pageCount')
   .get(validate(trackingDataValidation.getPDF), trackingDataController.printTrackingDatatoPDF);
 
 router

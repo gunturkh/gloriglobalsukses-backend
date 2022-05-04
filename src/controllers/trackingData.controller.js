@@ -65,14 +65,19 @@ const getTrackingData = catchAsync(async (req, res) => {
 });
 
 const printTrackingDatatoPDF = catchAsync(async (req, res) => {
+  const pageCount = req.params.pageCount
   const trackingData = await trackingDataService.getTrackingDataById(req.params.trackingDataId);
   if (!trackingData) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Tracking not found');
   }
   // console.log('trackingData', trackingData);
-  const { name, item, resi, address, phone, status } = trackingData;
+  const { name, item, resi, address, phone, status, salesOrder } = trackingData;
   const myDoc = new PDFDocument({ bufferPages: true });
 
+  const defaultMargin = 72;
+  const primaryColor = "#FFE200";
+  const secondaryColor = "#201E21";
+  const companyLogo = "assets/logo.jpg";
   const buffers = [];
   myDoc.on('data', buffers.push.bind(buffers));
   myDoc.on('end', () => {
@@ -86,12 +91,182 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
       .end(pdfData);
   });
 
-  myDoc.font('Times-Roman').fontSize(12).text(name);
-  myDoc.font('Times-Roman').fontSize(12).text(item);
-  myDoc.font('Times-Roman').fontSize(12).text(resi);
-  myDoc.font('Times-Roman').fontSize(12).text(address);
-  myDoc.font('Times-Roman').fontSize(12).text(phone);
-  myDoc.font('Times-Roman').fontSize(12).text(status);
+  for (let index = 1; index <= pageCount; index++) {
+    if (index !== 1) myDoc.addPage()
+
+    // -------------- Banner -------------
+    myDoc
+      .rect(defaultMargin, 30, myDoc.page.width - 2 * defaultMargin + 1, 300)
+      .stroke(secondaryColor);
+    myDoc
+      .rect(defaultMargin, 30, myDoc.page.width - 2 * defaultMargin + 1, 50)
+      .stroke(secondaryColor);
+    myDoc.image(companyLogo, defaultMargin + 5, 35, { width: 40, height: 40 });
+    myDoc
+      .fontSize(9)
+      .font('Helvetica')
+      .text("Pengirim", defaultMargin + 50, 40, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .text("Kunjungi Toko Online Kami :", defaultMargin + 200, 40, {
+        align: "left",
+        link: null,
+      });
+    myDoc.fontSize(9)
+      .text("www.gloriglobalsukses.com/public/", defaultMargin + 200, 52, {
+        align: "left",
+        link: null,
+      });
+    myDoc.fontSize(9)
+      .text("Instagram: gloglo.co.id", defaultMargin + 200, 64, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(10)
+      .text("GLORI 0822-6894-7572", defaultMargin + 50, 55, {
+        align: "left",
+        link: null,
+      });
+    myDoc.rect(defaultMargin, 80, myDoc.page.width - 2 * defaultMargin + 1, 20).fill(secondaryColor).stroke(secondaryColor);
+
+    // -------------- End of Banner Banner -------------
+
+    // -------------- Customer Details ----------------
+    myDoc
+      .fontSize(12)
+      .text("No SO : ", 350, 103, {
+        align: "left",
+        link: null,
+      });
+    myDoc.rect(400, 95, 141, 20).stroke(secondaryColor);
+    myDoc
+      .font('Helvetica-Bold')
+      .fillColor("#000")
+      .fontSize(12)
+      .text(salesOrder, 405, 103);
+    myDoc
+      .fontSize(10)
+      .font('Helvetica')
+      .text("Kepada : ", defaultMargin + 5, 103, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(10)
+      .text("Nama : ", defaultMargin + 5, 120, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text(name, defaultMargin + 80, 120, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(10)
+      .font('Helvetica')
+      .text("Alamat : ", defaultMargin + 5, 140, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text(address, defaultMargin + 80, 140, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(10)
+      .font('Helvetica')
+      .text("Nama Barang : ", defaultMargin + 5, 160, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text(`${item} (${index}/${pageCount} CTN)`, defaultMargin + 80, 160, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(10)
+      .font('Helvetica')
+      .text("No HP: ", defaultMargin + 5, 180, {
+        align: "left",
+        link: null,
+      });
+    myDoc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text(phone, defaultMargin + 80, 180, {
+        align: "left",
+        link: null,
+      });
+
+    myDoc.rect(defaultMargin, 200, myDoc.page.width - 2 * defaultMargin + 1, 20).fill(secondaryColor).stroke(secondaryColor);
+    // -------------- End of Customer Details ----------------
+
+
+    // -------------- Start of Cargo Details ----------------
+
+    myDoc.rect(defaultMargin + 80, 220, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 80, 235, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 80, 250, 15, 15).stroke(secondaryColor);
+    myDoc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text('SENTRAL CARGO', defaultMargin + 100, 222, {
+        align: "left",
+        link: null,
+      });
+
+    myDoc.rect(defaultMargin + 220, 220, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 220, 235, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 220, 250, 15, 15).stroke(secondaryColor);
+    myDoc
+      .fontSize(12)
+      .font('Helvetica-Bold')
+      .text('(LAINNYA)...', defaultMargin + 240, 252, {
+        align: "left",
+        link: null,
+      });
+
+    myDoc
+      .moveTo(400, 220)
+      .lineTo(400, 270)
+      .stroke()
+
+
+    myDoc.rect(defaultMargin, 265, myDoc.page.width - 2 * defaultMargin + 1, 20).fill(secondaryColor).stroke(secondaryColor);
+    // -------------- End of Cargo Details ----------------
+
+    // -------------- Start of Footer ----------------
+    myDoc
+      .fontSize(7)
+      .font('Helvetica')
+      .text('TERIMA KASIH SUDAH BERBELANJA', defaultMargin, 290, {
+        align: "center",
+        link: null,
+      });
+    myDoc
+      .fontSize(9)
+      .font('Helvetica-Bold')
+      .text('Produk dikirim dalam keadan baik', defaultMargin, 310, {
+        align: "center",
+        link: null,
+      });
+    // -------------- End of Footer ----------------
+
+  }
   myDoc.end();
 });
 
