@@ -77,7 +77,7 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
   const defaultMargin = 72;
   const primaryColor = "#FFE200";
   const secondaryColor = "#201E21";
-  const companyLogo = "assets/logo.png";
+  const companyLogo = "assets/logo.jpg";
   const buffers = [];
   myDoc.on('data', buffers.push.bind(buffers));
   myDoc.on('end', () => {
@@ -86,7 +86,7 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
       .writeHead(200, {
         'Content-Length': Buffer.byteLength(pdfData),
         'Content-Type': 'application/pdf',
-        'Content-disposition': 'attachment;filename=test.pdf',
+        'Content-disposition': `attachment;filename=${salesOrder}.pdf`,
       })
       .end(pdfData);
   });
