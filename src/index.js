@@ -49,6 +49,13 @@ process.on('SIGTERM', () => {
 
 process.on('SIGINT', () => {
   logger.info('(SIGINT) Shutting down...');
+  if (server) {
+    // eslint-disable-next-line no-undef
+    if (client) client.destroy();
+    // eslint-disable-next-line no-undef
+    else client.destroy();
+    process.exit(0);
+  }
   // eslint-disable-next-line no-undef
   if (client) client.destroy();
   // eslint-disable-next-line no-undef
