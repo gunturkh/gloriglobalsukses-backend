@@ -84,6 +84,10 @@ const getQR = catchAsync(async (req, res) => {
 
 const waLogout = catchAsync(async (req, res) => {
   // eslint-disable-next-line no-undef
+  if (client) {
+    // eslint-disable-next-line no-undef
+    await client.logout();
+  }
   client
     .getState()
     .then(async (data) => {

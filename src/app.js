@@ -27,7 +27,7 @@ const messageFormatter = require('./utils/messageFormatter');
 
 process.title = 'whatsapp-node-api';
 global.client = new Client({
-  authStrategy: new LocalAuth(),
+  // authStrategy: new LocalAuth(),
   puppeteer: {
     // for dev make it false, for production make it true
     headless: true,
@@ -92,8 +92,8 @@ client.on('auth_failure', () => {
   process.exit();
 });
 
-cron.schedule('* * * *', async () => {
-  console.log(`checking tracking data read status every 1 hour => ${new Date()}`);
+cron.schedule('*/4 * * * *', async () => {
+  console.log(`checking tracking data read status every 15 minutes => ${new Date()}`);
   const comparatorTimestamp = parseInt(moment().format('x'), 10);
   const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
     daysToSendReminderTimestamp: { $lte: comparatorTimestamp },
@@ -176,26 +176,28 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   transports: ['polling'],
   cors: {
-    cors: {
-      origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
-    },
+    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
   },
 });
 
 io.on('connection', (socket) => {
   console.log('New client connected');
 
+  socket.on("logout", async (arg) => {
+    console.log('logout', arg); // world
+    await socket.broadcast.emit('ClientInfo', {})
+
+  });
+
   client.on('authenticated', () => {
     console.log('AUTH!');
     authed = true;
-    socket.emit('FromAPI', { data: '', message: 'authenticated' });
+    socket.broadcast.emit('FromAPI', { data: '', message: 'authenticated' });
   });
 
   client.on('disconnected', async (reason) => {
     console.log('Client was logged out', reason);
-    await socket.emit('ClientInfo', {})
-    await client.destroy();
-    await client.initialize();
+    await socket.broadcast.emit('ClientInfo', {})
   });
 
   client.on('ready', () => {
@@ -203,7 +205,7 @@ io.on('connection', (socket) => {
     // Schedule tasks to be run on the server.
     cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       const comparatorTimestamp = parseInt(moment().format('x'), 10);
-      socket.emit('ClientInfo', client.info);
+      socket.broadcast.emit('ClientInfo', client.info);
       console.log('ClientInfo', client.info);
       console.log('comparatorTimestamp', comparatorTimestamp);
       const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
@@ -243,13 +245,21 @@ io.on('connection', (socket) => {
 
   client.on('qr', async (qr) => {
     console.log('qr', qr);
-    socket.emit('FromAPI', { data: qr, message: 'qr code' });
-    socket.emit('ClientInfo', {})
+    socket.broadcast.emit('FromAPI', { data: qr, message: 'qr code' });
+    socket.broadcast.emit('ClientInfo', {})
   });
   socket.on('disconnect', () => {
     console.log('Client disconnected');
     // clearInterval(interval);
   });
+});
+
+client.on('disconnected', async (reason) => {
+  console.log('Client was logged out outside socket', reason);
+  try {
+    if (client) await client.destroy();
+    await client.initialize();
+  } catch { }
 });
 
 server.listen(process.env.PORT, () => {
