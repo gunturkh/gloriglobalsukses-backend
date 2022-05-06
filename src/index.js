@@ -14,7 +14,7 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 const exitHandler = () => {
   if (server) {
     // eslint-disable-next-line no-undef
-    // if (client) client.destroy();
+    if (client) client.destroy();
     server.close(() => {
       logger.info('Server closed');
       process.exit(1);
@@ -23,7 +23,7 @@ const exitHandler = () => {
     // eslint-disable-next-line no-undef
     if (client) client.destroy();
     // eslint-disable-next-line no-undef
-    // else client.destroy();
+    else client.destroy();
     process.exit(1);
   }
 };
