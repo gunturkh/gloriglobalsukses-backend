@@ -86,7 +86,7 @@ const waLogout = catchAsync(async (req, res) => {
   // eslint-disable-next-line no-undef
   if (client) {
     // eslint-disable-next-line no-undef
-    await client.logout();
+    await client?.logout();
   }
   client
     .getState()
@@ -98,6 +98,8 @@ const waLogout = catchAsync(async (req, res) => {
         // await client.destroy();
         return res.status('200').send({ message: 'wa logout success' });
       }
+      // eslint-disable-next-line no-undef
+      await client?.logout();
       return res.status('200').send({ message: 'wa logout failed' });
     })
     .catch(() => {
