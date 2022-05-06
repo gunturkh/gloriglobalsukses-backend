@@ -189,10 +189,10 @@ io.on('connection', (socket) => {
 
   });
 
-  client.on('authenticated', () => {
+  client.on('authenticated', async () => {
     console.log('AUTH!');
     authed = true;
-    socket.broadcast.emit('FromAPI', { data: '', message: 'authenticated' });
+    await socket.broadcast.emit('FromAPI', { data: '', message: 'authenticated' });
   });
 
   client.on('disconnected', async (reason) => {
@@ -245,8 +245,8 @@ io.on('connection', (socket) => {
 
   client.on('qr', async (qr) => {
     console.log('qr', qr);
-    socket.broadcast.emit('FromAPI', { data: qr, message: 'qr code' });
-    socket.broadcast.emit('ClientInfo', {})
+    await socket.broadcast.emit('FromAPI', { data: qr, message: 'qr code' });
+    await socket.broadcast.emit('ClientInfo', {})
   });
   socket.on('disconnect', () => {
     console.log('Client disconnected');
@@ -258,6 +258,7 @@ client.on('disconnected', async (reason) => {
   console.log('Client was logged out outside socket', reason);
   try {
     if (client) await client.destroy();
+    client?.destroy();
     await client.initialize();
   } catch { }
 });
