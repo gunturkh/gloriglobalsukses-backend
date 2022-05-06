@@ -30,7 +30,7 @@ global.client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     // for dev make it false, for production make it true
-    headless: true,
+    headless: false,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
   },
@@ -204,6 +204,7 @@ io.on('connection', (socket) => {
     cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       const comparatorTimestamp = parseInt(moment().format('x'), 10);
       socket.emit('ClientInfo', client.info);
+      console.log('ClientInfo', client.info);
       console.log('comparatorTimestamp', comparatorTimestamp);
       const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
         sendMessageTimestamp: { $lte: comparatorTimestamp },

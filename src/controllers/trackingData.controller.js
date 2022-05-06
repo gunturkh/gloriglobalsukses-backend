@@ -7,7 +7,8 @@ const { trackingDataService } = require('../services');
 const messageFormatter = require('../utils/messageFormatter');
 
 const createTrackingData = catchAsync(async (req, res) => {
-  const trackingData = await trackingDataService.createTrackingData(req.body);
+  let body = req.body.setSendMessageNow ? { ...req.body, sendMessageStatus: true } : req.body
+  const trackingData = await trackingDataService.createTrackingData(body);
   const { phone, setSendMessageNow } = trackingData;
   console.log('trackingData created', trackingData);
   if (setSendMessageNow) {
@@ -271,7 +272,8 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
 });
 
 const updateTrackingData = catchAsync(async (req, res) => {
-  const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, req.body);
+  let body = req.body.setSendMessageNow ? { ...req.body, sendMessageStatus: true } : req.body
+  const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, body);
   const { phone, setSendMessageNow } = trackingData;
   console.log('trackingData update', trackingData);
   if (setSendMessageNow) {
