@@ -261,6 +261,7 @@ client.on('disconnected', async (reason) => {
     client?.destroy();
     await client.initialize();
   } catch { }
+  client?.destroy();
 });
 
 server.listen(process.env.PORT, () => {

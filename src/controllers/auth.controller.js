@@ -95,14 +95,20 @@ const waLogout = catchAsync(async (req, res) => {
         // eslint-disable-next-line no-undef
         await client.logout();
         // eslint-disable-next-line no-undef
-        // await client.destroy();
+        await client.destroy();
         return res.status('200').send({ message: 'wa logout success' });
       }
       // eslint-disable-next-line no-undef
       await client?.logout();
+      // eslint-disable-next-line no-undef
+      await client.destroy();
       return res.status('200').send({ message: 'wa logout failed' });
     })
-    .catch(() => {
+    .catch(async () => {
+      // eslint-disable-next-line no-undef
+      await client?.logout();
+      // eslint-disable-next-line no-undef
+      await client.destroy();
       return res.status('200').send({ message: 'wa logout failed' });
     });
 });
