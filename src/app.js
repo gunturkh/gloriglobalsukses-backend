@@ -205,9 +205,9 @@ io.on('connection', (socket) => {
     // Schedule tasks to be run on the server.
     cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       const comparatorTimestamp = parseInt(moment().format('x'), 10);
-      socket.broadcast.emit('ClientInfo', client.info);
-      console.log('ClientInfo', client.info);
-      console.log('comparatorTimestamp', comparatorTimestamp);
+      await socket.broadcast.emit('ClientInfo', client.info);
+      await console.log('ClientInfo', client.info);
+      await console.log('comparatorTimestamp', comparatorTimestamp);
       const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
         sendMessageTimestamp: { $lte: comparatorTimestamp },
         sendMessageStatus: false,
