@@ -30,7 +30,7 @@ global.client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     // for dev make it false, for production make it true
-    headless: false,
+    headless: true,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
   },
@@ -92,8 +92,8 @@ client.on('auth_failure', () => {
   process.exit();
 });
 
-cron.schedule('30 * * * * * *', async () => {
-  console.log(`checking tracking data read status every 30 seconds=> ${new Date()}`);
+cron.schedule('* * * *', async () => {
+  console.log(`checking tracking data read status every 1 hour => ${new Date()}`);
   const comparatorTimestamp = parseInt(moment().format('x'), 10);
   const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
     daysToSendReminderTimestamp: { $lte: comparatorTimestamp },
