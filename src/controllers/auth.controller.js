@@ -84,12 +84,12 @@ const getQR = catchAsync(async (req, res) => {
 
 const waLogout = catchAsync(async (req, res) => {
   // eslint-disable-next-line no-undef
-  authed = false;
-  // eslint-disable-next-line no-undef
-  if (client) {
-    // eslint-disable-next-line no-undef
-    await client.logout();
-  }
+  // if (client) {
+  //   // eslint-disable-next-line no-undef
+  //   await client.logout();
+  //   // eslint-disable-next-line no-undef
+  //   authed = false;
+  // }
   // eslint-disable-next-line no-undef
   client
     .getState()
@@ -99,6 +99,8 @@ const waLogout = catchAsync(async (req, res) => {
         await client.logout();
         // eslint-disable-next-line no-undef
         // await client.destroy();
+        // eslint-disable-next-line no-undef
+        authed = false;
         return res.status('200').send({ message: 'wa logout success' });
       }
       // eslint-disable-next-line no-undef
