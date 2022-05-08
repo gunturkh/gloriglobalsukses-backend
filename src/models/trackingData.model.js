@@ -87,6 +87,12 @@ const trackingDataSchema = mongoose.Schema(
     setSendMessageNow: {
       type: Boolean,
     },
+    images: {
+      type: Array,
+    },
+    history: {
+      type: Array,
+    },
   },
   {
     timestamps: true,

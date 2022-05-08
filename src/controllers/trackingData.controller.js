@@ -5,11 +5,12 @@ const ApiError = require('../utils/ApiError');
 const catchAsync = require('../utils/catchAsync');
 const { trackingDataService } = require('../services');
 const messageFormatter = require('../utils/messageFormatter');
+const { MessageMedia } = require('whatsapp-web.js');
 
 const createTrackingData = catchAsync(async (req, res) => {
   let body = req.body.setSendMessageNow ? { ...req.body, sendMessageStatus: true } : req.body;
   const trackingData = await trackingDataService.createTrackingData(body);
-  const { phone, setSendMessageNow } = trackingData;
+  const { phone, setSendMessageNow, images } = trackingData;
   console.log('trackingData created', trackingData);
   if (setSendMessageNow) {
     const { message } = messageFormatter(trackingData);
@@ -21,6 +22,13 @@ const createTrackingData = catchAsync(async (req, res) => {
       client
         .sendMessage(`${phone}@c.us`, message)
         .then(async (response) => {
+          if (images && images.length > 0) {
+            images.forEach(async (image) => {
+              const media = await MessageMedia.fromUrl(image);
+              // eslint-disable-next-line no-undef
+              client.sendMessage(`${phone}@c.us`, media).then(() => console.log('image sent'));
+            });
+          }
           if (response.id.fromMe) {
             res
               .status(httpStatus.CREATED)

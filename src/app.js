@@ -46,11 +46,12 @@ if (config.env !== 'test') {
 // set security HTTP headers
 app.use(helmet());
 
+// parse urlencoded request body
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, parameterLimit: 50000, limit: '50mb' }));
+
 // parse json request body
 app.use(express.json());
-
-// parse urlencoded request body
-app.use(express.urlencoded({ extended: true }));
 
 // sanitize request data
 app.use(xss());
