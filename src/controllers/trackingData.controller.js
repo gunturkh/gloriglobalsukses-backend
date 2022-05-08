@@ -38,6 +38,7 @@ const createTrackingData = catchAsync(async (req, res) => {
 
 const getTrackingDatas = catchAsync(async (req, res) => {
   const filter = pick(req.query, [
+    'read',
     'name',
     'phone',
     'address',
