@@ -84,10 +84,13 @@ const getQR = catchAsync(async (req, res) => {
 
 const waLogout = catchAsync(async (req, res) => {
   // eslint-disable-next-line no-undef
+  authed = false;
+  // eslint-disable-next-line no-undef
   if (client) {
     // eslint-disable-next-line no-undef
-    await client?.logout();
+    await client.logout();
   }
+  // eslint-disable-next-line no-undef
   client
     .getState()
     .then(async (data) => {
@@ -95,20 +98,20 @@ const waLogout = catchAsync(async (req, res) => {
         // eslint-disable-next-line no-undef
         await client.logout();
         // eslint-disable-next-line no-undef
-        await client.destroy();
+        // await client.destroy();
         return res.status('200').send({ message: 'wa logout success' });
       }
       // eslint-disable-next-line no-undef
-      await client?.logout();
+      await client.logout();
       // eslint-disable-next-line no-undef
-      await client.destroy();
+      // await client.destroy();
       return res.status('200').send({ message: 'wa logout failed' });
     })
     .catch(async () => {
       // eslint-disable-next-line no-undef
-      await client?.logout();
+      await client.logout();
       // eslint-disable-next-line no-undef
-      await client.destroy();
+      // await client.destroy();
       return res.status('200').send({ message: 'wa logout failed' });
     });
 });

@@ -123,7 +123,6 @@ cron.schedule('*/4 * * * *', async () => {
 //   // }
 // });
 
-
 client.on('change_state', (state) => {
   console.log('CHANGE STATE', state);
 });
@@ -173,6 +172,9 @@ app.use(errorHandler);
 
 const server = http.createServer(app);
 
+let generatedQR = '';
+let interval;
+
 const io = socketIo(server, {
   transports: ['polling'],
   cors: {
@@ -183,21 +185,33 @@ const io = socketIo(server, {
 io.on('connection', (socket) => {
   console.log('New client connected');
 
-  socket.on("logout", async (arg) => {
-    console.log('logout', arg); // world
-    await socket.broadcast.emit('ClientInfo', {})
+  const getQRAndEmit = (socket) => {
+    // Emitting a new message. Will be consumed by the client
+    console.log('getQRAndEmit', generatedQR);
+    // socket.broadcast.emit('FromAPI', { data: generatedQR, message: 'qr code' });
+    if (authed) io.emit('FromAPI', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
+    else if (!authed) io.emit('FromAPI', { authed, data: generatedQR, message: 'qr code', clientInfo: null });
+  };
 
+  if (interval) {
+    clearInterval(interval);
+  }
+  interval = setInterval(() => getQRAndEmit(socket), 3000);
+
+  socket.on('logout', async (arg) => {
+    console.log('logout', arg); // world
+    await io.emit('ClientInfo', {});
   });
 
   client.on('authenticated', async () => {
     console.log('AUTH!');
     authed = true;
-    await socket.broadcast.emit('FromAPI', { data: '', message: 'authenticated' });
+    await io.emit('FromAPI', { data: '', message: 'authenticated' });
   });
 
   client.on('disconnected', async (reason) => {
     console.log('Client was logged out', reason);
-    await socket.broadcast.emit('ClientInfo', {})
+    await io.emit('ClientInfo', {});
   });
 
   client.on('ready', () => {
@@ -205,9 +219,17 @@ io.on('connection', (socket) => {
     // Schedule tasks to be run on the server.
     cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       const comparatorTimestamp = parseInt(moment().format('x'), 10);
-      await socket.broadcast.emit('ClientInfo', client.info);
-      await console.log('ClientInfo', client.info);
-      await console.log('comparatorTimestamp', comparatorTimestamp);
+      // socket.broadcast.emit('ClientInfo', client.info);
+      console.log('authed', authed);
+      // console.log('ClientInfo', authed ? client.info : {});
+      // if (authed) {
+      //   io.emit('ClientInfo', client.info);
+      //   console.log('ClientInfo', client.info);
+      // } else {
+      //   io.emit('ClientInfo', {});
+      //   console.log('ClientInfo', {});
+      // }
+      console.log('comparatorTimestamp', comparatorTimestamp);
       const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
         sendMessageTimestamp: { $lte: comparatorTimestamp },
         sendMessageStatus: false,
@@ -244,13 +266,14 @@ io.on('connection', (socket) => {
   });
 
   client.on('qr', async (qr) => {
-    console.log('qr', qr);
-    await socket.broadcast.emit('FromAPI', { data: qr, message: 'qr code' });
-    await socket.broadcast.emit('ClientInfo', {})
+    console.log('qr from WA', qr);
+    generatedQR = qr;
+    // await socket.broadcast.emit('FromAPI', { data: qr, message: 'qr code' });
+    // await socket.broadcast.emit('ClientInfo', {});
   });
   socket.on('disconnect', () => {
     console.log('Client disconnected');
-    // clearInterval(interval);
+    clearInterval(interval);
   });
 });
 
@@ -258,10 +281,10 @@ client.on('disconnected', async (reason) => {
   console.log('Client was logged out outside socket', reason);
   try {
     if (client) await client.destroy();
-    client?.destroy();
+    await client.destroy();
     await client.initialize();
-  } catch { }
-  client?.destroy();
+  } catch {}
+  await client.destroy();
 });
 
 server.listen(process.env.PORT, () => {
