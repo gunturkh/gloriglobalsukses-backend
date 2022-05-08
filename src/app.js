@@ -187,10 +187,14 @@ io.on('connection', (socket) => {
 
   const getQRAndEmit = (socket) => {
     // Emitting a new message. Will be consumed by the client
-    console.log('getQRAndEmit', generatedQR);
     // socket.broadcast.emit('FromAPI', { data: generatedQR, message: 'qr code' });
-    if (authed) io.emit('FromAPI', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
-    else if (!authed) io.emit('FromAPI', { authed, data: generatedQR, message: 'qr code', clientInfo: null });
+    if (authed) {
+      io.emit('FromAPI', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
+      console.log('getQRAndEmit', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
+    } else if (!authed) {
+      io.emit('FromAPI', { authed, data: generatedQR, message: 'qr code', clientInfo: null });
+      console.log('getQRAndEmit', { authed, data: generatedQR, message: 'authenticated', clientInfo: null });
+    }
   };
 
   if (interval) {
@@ -279,12 +283,14 @@ io.on('connection', (socket) => {
 
 client.on('disconnected', async (reason) => {
   console.log('Client was logged out outside socket', reason);
+  authed = false;
   try {
     if (client) await client.destroy();
-    await client.destroy();
+    else await client.destroy();
     await client.initialize();
   } catch {}
   await client.destroy();
+  await client.initialize();
 });
 
 server.listen(process.env.PORT, () => {
