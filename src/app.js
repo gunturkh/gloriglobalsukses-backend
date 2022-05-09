@@ -191,10 +191,10 @@ io.on('connection', (socket) => {
     // socket.broadcast.emit('FromAPI', { data: generatedQR, message: 'qr code' });
     if (authed) {
       io.emit('FromAPI', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
-      console.log('getQRAndEmit', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
+      // console.log('getQRAndEmit', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
     } else if (!authed) {
       io.emit('FromAPI', { authed, data: generatedQR, message: 'qr code', clientInfo: null });
-      console.log('getQRAndEmit', { authed, data: generatedQR, message: 'authenticated', clientInfo: null });
+      // console.log('getQRAndEmit', { authed, data: generatedQR, message: 'authenticated', clientInfo: null });
     }
   };
 
@@ -225,7 +225,7 @@ io.on('connection', (socket) => {
     cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       const comparatorTimestamp = parseInt(moment().format('x'), 10);
       // socket.broadcast.emit('ClientInfo', client.info);
-      console.log('authed', authed);
+      // console.log('authed', authed);
       // console.log('ClientInfo', authed ? client.info : {});
       // if (authed) {
       //   io.emit('ClientInfo', client.info);
@@ -234,13 +234,13 @@ io.on('connection', (socket) => {
       //   io.emit('ClientInfo', {});
       //   console.log('ClientInfo', {});
       // }
-      console.log('comparatorTimestamp', comparatorTimestamp);
+      // console.log('comparatorTimestamp', comparatorTimestamp);
       const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
         sendMessageTimestamp: { $lte: comparatorTimestamp },
         sendMessageStatus: false,
         setSendMessageNow: false,
       });
-      console.log('foundTrackingDataForSendingAutomaticMessage', foundTrackingDataForSendingAutomaticMessage);
+      console.log('foundTrackingDataForSendingAutomaticMessage found', foundTrackingDataForSendingAutomaticMessage.length);
       if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
         await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
           const { phone } = trackingData;
@@ -251,7 +251,6 @@ io.on('connection', (socket) => {
           await client
             .sendMessage(`${phone}@c.us`, message)
             .then(async (response) => {
-              console.log('response', response);
               if (response.id.fromMe) {
                 console.log({
                   status: 'success',

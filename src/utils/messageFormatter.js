@@ -20,6 +20,12 @@ const messageFormatter = (trackingData) => {
     // setStatusManually,
   } = trackingData;
   switch (status) {
+    case 'STATUS ORDERAN SUDAH DITERIMA':
+      return {
+        message: `Customer *${name}* yth, Terima kasih sudah berbelanja, orderan anda dengan *${salesOrder}* barang *${item}* sudah kami terima dan akan segera diproses, mohon tunggu informasi selanjutnya. Terima kasih.`,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+      };
+
     case 'SUDAH DIPESAN DAN BARANG READY':
       return {
         message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
