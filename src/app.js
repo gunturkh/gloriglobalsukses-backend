@@ -93,7 +93,7 @@ client.on('auth_failure', () => {
   process.exit();
 });
 
-cron.schedule('*/4 * * * *', async () => {
+const checkTrackingDataTask = cron.schedule('*/60 * * * *', async () => {
   console.log(`checking tracking data read status every 15 minutes => ${new Date()}`);
   const comparatorTimestamp = parseInt(moment().format('x'), 10);
   const foundTrackingDataForUpdateReadStatus = await TrackingData.find({
@@ -113,16 +113,7 @@ cron.schedule('*/4 * * * *', async () => {
   }
 });
 
-// client.on('message', async (msg) => {
-//   // if (config.webhook.enabled) {
-//   //   if (msg.hasMedia) {
-//   //     const attachmentData = await msg.downloadMedia();
-//   //     // eslint-disable-next-line no-param-reassign
-//   //     msg.attachmentData = attachmentData;
-//   //   }
-//   //   axios.post(config.webhook.path, { msg });
-//   // }
-// });
+checkTrackingDataTask.start();
 
 client.on('change_state', (state) => {
   console.log('CHANGE STATE', state);
@@ -183,6 +174,52 @@ const io = socketIo(server, {
   },
 });
 
+const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
+  const comparatorTimestamp = parseInt(moment().format('x'), 10);
+  // socket.broadcast.emit('ClientInfo', client.info);
+  // console.log('authed', authed);
+  // console.log('ClientInfo', authed ? client.info : {});
+  // if (authed) {
+  //   io.emit('ClientInfo', client.info);
+  //   console.log('ClientInfo', client.info);
+  // } else {
+  //   io.emit('ClientInfo', {});
+  //   console.log('ClientInfo', {});
+  // }
+  // console.log('comparatorTimestamp', comparatorTimestamp);
+  const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
+    sendMessageTimestamp: { $lte: comparatorTimestamp },
+    sendMessageStatus: false,
+    setSendMessageNow: false,
+  });
+  console.log('foundTrackingDataForSendingAutomaticMessage found', foundTrackingDataForSendingAutomaticMessage.length);
+  if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
+    await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
+      const { phone } = trackingData;
+      // eslint-disable-next-line no-undef
+      const { message, daysToSendReminder } = messageFormatter(trackingData);
+      // console.log({ message, daysToSendReminder });
+      const trackingDataFoundById = await TrackingData.findById(trackingData.id);
+      await client
+        .sendMessage(`${phone}@c.us`, message)
+        .then(async (response) => {
+          if (response.id.fromMe) {
+            console.log({
+              status: 'success',
+              message: `Message successfully sent to ${phone} with message: ${message}`,
+            });
+            if (trackingDataFoundById) {
+              console.log('trackingDataFoundById', trackingDataFoundById);
+              Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true, read: false });
+              await trackingDataFoundById.save();
+            }
+          }
+        })
+        .catch((err) => console.log(err));
+    });
+  }
+});
+
 io.on('connection', (socket) => {
   console.log('New client connected');
 
@@ -222,51 +259,7 @@ io.on('connection', (socket) => {
   client.on('ready', () => {
     console.log('Client is ready!');
     // Schedule tasks to be run on the server.
-    cron.schedule('10,20,30,40,50 * * * * * *', async () => {
-      const comparatorTimestamp = parseInt(moment().format('x'), 10);
-      // socket.broadcast.emit('ClientInfo', client.info);
-      // console.log('authed', authed);
-      // console.log('ClientInfo', authed ? client.info : {});
-      // if (authed) {
-      //   io.emit('ClientInfo', client.info);
-      //   console.log('ClientInfo', client.info);
-      // } else {
-      //   io.emit('ClientInfo', {});
-      //   console.log('ClientInfo', {});
-      // }
-      // console.log('comparatorTimestamp', comparatorTimestamp);
-      const foundTrackingDataForSendingAutomaticMessage = await TrackingData.find({
-        sendMessageTimestamp: { $lte: comparatorTimestamp },
-        sendMessageStatus: false,
-        setSendMessageNow: false,
-      });
-      console.log('foundTrackingDataForSendingAutomaticMessage found', foundTrackingDataForSendingAutomaticMessage.length);
-      if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
-        await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
-          const { phone } = trackingData;
-          // eslint-disable-next-line no-undef
-          const { message, daysToSendReminder } = messageFormatter(trackingData);
-          console.log({ message, daysToSendReminder });
-          const trackingDataFoundById = await TrackingData.findById(trackingData.id);
-          await client
-            .sendMessage(`${phone}@c.us`, message)
-            .then(async (response) => {
-              if (response.id.fromMe) {
-                console.log({
-                  status: 'success',
-                  message: `Message successfully sent to ${phone} with message: ${message}`,
-                });
-                if (trackingDataFoundById) {
-                  console.log('trackingDataFoundById', trackingDataFoundById);
-                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true, read: false });
-                  await trackingDataFoundById.save();
-                }
-              }
-            })
-            .catch((err) => console.log(err));
-        });
-      }
-    });
+    cronTask.start();
   });
 
   client.on('qr', async (qr) => {
@@ -279,18 +272,19 @@ io.on('connection', (socket) => {
     console.log('Client disconnected');
     clearInterval(interval);
   });
-});
-
-client.on('disconnected', async (reason) => {
-  console.log('Client was logged out outside socket', reason);
-  authed = false;
-  try {
-    if (client) await client.destroy();
-    else await client.destroy();
+  client.on('disconnected', async (reason) => {
+    console.log('Client was logged out inside socket', reason);
+    cronTask.stop();
+    checkTrackingDataTask.stop();
+    authed = false;
+    try {
+      if (client) await client.destroy();
+      else await client.destroy();
+      await client.initialize();
+    } catch {}
+    await client.destroy();
     await client.initialize();
-  } catch {}
-  await client.destroy();
-  await client.initialize();
+  });
 });
 
 server.listen(process.env.PORT, () => {
