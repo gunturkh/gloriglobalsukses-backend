@@ -32,7 +32,7 @@ const messageFormatter = (trackingData) => {
           customerOrderDate
         ).format(
           'DD MMMM YYYY'
-        )}, sudah dalam proses pengiriman ke Gudang China. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`,
+        )}, sudah dalam proses pengiriman ke Gudang China. Ditunggu informasi selanjutnya. Terima kasih.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
       };
 
