@@ -82,7 +82,7 @@ const messageFormatter = (trackingData) => {
           estimatedDate
         ).format(
           'DD MMMM YYYY'
-        )}* dan sudah dikirimkan dengan nomor resi *${resi}* .Jangan lupa Untuk membuat video unboxing jika barang telah sampai untuk menghindari kesalahan dalam pengiriman. Ditunggu orderan selanjutnya, Terima kasih.`,
+        )}* dan sudah dikirimkan dengan nomor resi SENTRAL CARGO *${resi}* .Jangan lupa Untuk membuat video unboxing jika barang telah sampai untuk menghindari kesalahan dalam pengiriman. Ditunggu orderan selanjutnya, Terima kasih.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
       };
 
