@@ -69,6 +69,18 @@ const trackingDataSchema = mongoose.Schema(
     orderArrivedToWarehouseDate: {
       type: Date,
     },
+    shipoutDate: {
+      type: Date,
+    },
+    cargoName: {
+      type: String,
+    },
+    cartonAmount: {
+      type: Number,
+    },
+    itemDetail: {
+      type: String,
+    },
     productionDays: {
       type: Number,
     },

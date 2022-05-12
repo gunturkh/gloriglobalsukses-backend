@@ -264,7 +264,7 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
 const updateTrackingData = catchAsync(async (req, res) => {
   let body = req.body.setSendMessageNow ? { ...req.body, sendMessageStatus: true } : req.body;
   const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, body);
-  const { phone, setSendMessageNow } = trackingData;
+  const { phone, setSendMessageNow, images } = trackingData;
   console.log('trackingData update', trackingData);
   if (setSendMessageNow) {
     const { message } = messageFormatter(trackingData);
@@ -278,6 +278,13 @@ const updateTrackingData = catchAsync(async (req, res) => {
         .then((response) => {
           if (response.id.fromMe) {
             res.send({ status: 'success', message: `Message successfully sent to ${phone}`, data: trackingData });
+          }
+          if (images && images.length > 0) {
+            images.forEach(async (image) => {
+              const media = await MessageMedia.fromUrl(image);
+              // eslint-disable-next-line no-undef
+              client.sendMessage(`${phone}@c.us`, media).then(() => console.log('image sent'));
+            });
           }
         })
         .catch((err) => {
