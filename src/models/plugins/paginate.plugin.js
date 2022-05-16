@@ -45,12 +45,12 @@ const paginate = (schema) => {
       }
       return acc;
     }, {});
-    console.log('modifiedFilter', modifiedFilter);
+    // console.log('modifiedFilter', modifiedFilter);
     // const countPromise = this.countDocuments(filter).exec();
     const countPromise = this.countDocuments(modifiedFilter).exec();
-    countPromise.then((count) => {
-      console.log('count', count);
-    });
+    // countPromise.then((count) => {
+    //   console.log('count', count);
+    // });
     // let docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit);
     let docsPromise = this.find(modifiedFilter).sort(sort).skip(skip).limit(limit);
 
