@@ -54,7 +54,7 @@ const messageFormatter = (trackingData) => {
 
     case 'SUDAH TIBA DIGUDANG CHINA':
       return {
-        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah tiba di Gudang China dengan *${resi}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah tiba di Gudang China dengan resi china lokal *${resi}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 3,
       };
 
