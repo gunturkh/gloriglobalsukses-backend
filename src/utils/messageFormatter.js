@@ -38,7 +38,7 @@ const messageFormatter = (trackingData) => {
 
     case 'SUDAH DIPESAN DAN BARANG PRODUKSI':
       return {
-        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan pada tanggal ${moment(
           customerOrderDate
         ).format(
           'DD MMMM YYYY'
