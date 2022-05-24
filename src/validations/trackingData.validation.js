@@ -61,6 +61,8 @@ const getTrackingDatas = {
     setStatusManually: Joi.boolean(),
     setSendMessageNow: Joi.boolean(),
     customerOrderDate: Joi.string(),
+    customerOrderDate_gte: Joi.string(),
+    customerOrderDate_lte: Joi.string(),
     orderArrivedToWarehouseDate: Joi.string(),
     images: Joi.array(),
     history: Joi.array(),

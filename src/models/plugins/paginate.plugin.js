@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 
+const moment = require('moment');
 const paginate = (schema) => {
   /**
    * @typedef {Object} QueryResult
@@ -39,13 +40,21 @@ const paginate = (schema) => {
     const modifiedFilter = Object.keys(filter).reduce((acc, key) => {
       if (typeof filter[key] === 'boolean') {
         acc[key] = filter[key];
+      } else if (key === 'customerOrderDate') {
+        acc[key] = moment.utc(filter[key]).startOf('day').toDate();
+        // } else if (key === 'customerOrderDate_gte') {
+        //   acc.customerOrderDate = { $gte: moment.utc(filter[key]).startOf('day').toDate() };
+        // } else if (key === 'customerOrderDate_lte') {
+        //   acc.customerOrderDate = { $lte: moment.utc(filter[key]).startOf('day').toDate() };
+      } else if (typeof filter[key] === 'number') {
+        acc[key] = filter[key];
       } else {
         // eslint-disable-next-line security/detect-non-literal-regexp
         acc[key] = new RegExp(`${filter[key]}`, 'i');
       }
       return acc;
     }, {});
-    // console.log('modifiedFilter', modifiedFilter);
+    console.log('modifiedFilter', modifiedFilter);
     // const countPromise = this.countDocuments(filter).exec();
     const countPromise = this.countDocuments(modifiedFilter).exec();
     // countPromise.then((count) => {

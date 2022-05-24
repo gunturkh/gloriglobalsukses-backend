@@ -57,6 +57,9 @@ const getTrackingDatas = catchAsync(async (req, res) => {
     'salesOrder',
     'label',
     'sendMessageStatus',
+    'customerOrderDate',
+    'customerOrderDate_gte',
+    'customerOrderDate_lte',
   ]);
   const options = pick(req.query, ['sortBy', 'limit', 'page', 'populate']);
   const result = await trackingDataService.queryTrackingDatas(filter, options);
