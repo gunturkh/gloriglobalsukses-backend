@@ -255,7 +255,7 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
       align: 'center',
       link: null,
     });
-    myDoc.fontSize(9).font('Helvetica-Bold').text('Produk dikirim dalam keadan baik', defaultMargin, 330, {
+    myDoc.fontSize(9).font('Helvetica-Bold').text('Produk dikirim dalam keadan baik', defaultMargin, 320, {
       align: 'center',
       link: null,
     });
