@@ -108,7 +108,7 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
     if (index !== 1) myDoc.addPage();
 
     // -------------- Banner -------------
-    myDoc.rect(defaultMargin, 30, myDoc.page.width - 2 * defaultMargin + 1, 300).stroke(secondaryColor);
+    myDoc.rect(defaultMargin, 30, myDoc.page.width - 2 * defaultMargin + 1, 320).stroke(secondaryColor);
     myDoc.rect(defaultMargin, 30, myDoc.page.width - 2 * defaultMargin + 1, 50).stroke(secondaryColor);
     myDoc.image(companyLogo, defaultMargin + 5, 35, { width: 40, height: 40 });
     myDoc
@@ -200,62 +200,62 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
     myDoc
       .fontSize(10)
       .font('Helvetica')
-      .text('No HP: ', defaultMargin + 5, 200, {
+      .text('No HP: ', defaultMargin + 5, 220, {
         align: 'left',
         link: null,
       });
     myDoc
       .fontSize(12)
       .font('Helvetica-Bold')
-      .text(phone, defaultMargin + 80, 200, {
+      .text(phone, defaultMargin + 80, 220, {
         align: 'left',
         link: null,
       });
 
     myDoc
-      .rect(defaultMargin, 220, myDoc.page.width - 2 * defaultMargin + 1, 20)
+      .rect(defaultMargin, 240, myDoc.page.width - 2 * defaultMargin + 1, 20)
       .fill(secondaryColor)
       .stroke(secondaryColor);
     // -------------- End of Customer Details ----------------
 
     // -------------- Start of Cargo Details ----------------
 
-    myDoc.rect(defaultMargin + 80, 240, 15, 15).stroke(secondaryColor);
-    myDoc.rect(defaultMargin + 80, 255, 15, 15).stroke(secondaryColor);
-    myDoc.rect(defaultMargin + 80, 270, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 80, 260, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 80, 275, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 80, 290, 15, 15).stroke(secondaryColor);
     myDoc
       .fontSize(12)
       .font('Helvetica-Bold')
-      .text('SENTRAL CARGO', defaultMargin + 100, 242, {
+      .text('SENTRAL CARGO', defaultMargin + 100, 262, {
         align: 'left',
         link: null,
       });
 
-    myDoc.rect(defaultMargin + 220, 240, 15, 15).stroke(secondaryColor);
-    myDoc.rect(defaultMargin + 220, 255, 15, 15).stroke(secondaryColor);
-    myDoc.rect(defaultMargin + 220, 270, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 220, 260, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 220, 275, 15, 15).stroke(secondaryColor);
+    myDoc.rect(defaultMargin + 220, 290, 15, 15).stroke(secondaryColor);
     myDoc
       .fontSize(12)
       .font('Helvetica-Bold')
-      .text('(LAINNYA)...', defaultMargin + 240, 272, {
+      .text('(LAINNYA)...', defaultMargin + 240, 292, {
         align: 'left',
         link: null,
       });
 
-    myDoc.moveTo(400, 240).lineTo(400, 290).stroke();
+    myDoc.moveTo(400, 260).lineTo(400, 310).stroke();
 
     myDoc
-      .rect(defaultMargin, 285, myDoc.page.width - 2 * defaultMargin + 1, 20)
+      .rect(defaultMargin, 305, myDoc.page.width - 2 * defaultMargin + 1, 20)
       .fill(secondaryColor)
       .stroke(secondaryColor);
     // -------------- End of Cargo Details ----------------
 
     // -------------- Start of Footer ----------------
-    myDoc.fontSize(7).font('Helvetica').text('TERIMA KASIH SUDAH BERBELANJA', defaultMargin, 310, {
+    myDoc.fontSize(7).font('Helvetica').text('TERIMA KASIH SUDAH BERBELANJA', defaultMargin, 330, {
       align: 'center',
       link: null,
     });
-    myDoc.fontSize(9).font('Helvetica-Bold').text('Produk dikirim dalam keadan baik', defaultMargin, 320, {
+    myDoc.fontSize(9).font('Helvetica-Bold').text('Produk dikirim dalam keadan baik', defaultMargin, 340, {
       align: 'center',
       link: null,
     });
