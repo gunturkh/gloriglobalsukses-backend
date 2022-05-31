@@ -58,7 +58,7 @@ const messageFormatter = (trackingData) => {
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 3,
       };
 
-    case 'BARANG LOADING KE BATAM':
+    case 'BARANG LOADING BATAM - JAKARTA':
       return {
         message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
           estimatedDate
