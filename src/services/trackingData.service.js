@@ -114,7 +114,7 @@ const messageFormatter = (trackingData) => {
       message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah tiba di Gudang China dengan *${resi}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
       break;
 
-    case 'BARANG LOADING KE BATAM':
+    case 'BARANG LOADING BATAM - JAKARTA':
       message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
         estimatedDate
       ).format('DD MMMM YYYY')}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
