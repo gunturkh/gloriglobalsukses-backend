@@ -1,4 +1,5 @@
 const moment = require('moment');
+const rupiah = require('./currencyFormatter');
 
 const messageFormatter = (trackingData) => {
   const {
@@ -72,7 +73,9 @@ const messageFormatter = (trackingData) => {
           estimatedDate
         ).format(
           'DD MMMM YYYY'
-        )}* dan akan segera diproses pengiriman ke alamat anda. Mohon untuk segera melakukan pelunasan *sisa DP 30%* sebesar *IDR ${remainingDownPaymentAmount}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
+        )}* dan akan segera diproses pengiriman ke alamat anda. Mohon untuk segera melakukan pelunasan *sisa DP 30%* sebesar *IDR ${rupiah(
+          remainingDownPaymentAmount
+        )}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
       };
 
@@ -83,7 +86,7 @@ const messageFormatter = (trackingData) => {
         ).format(
           'DD MMMM YYYY'
         )}* dan sudah dikirimkan dengan nomor resi SENTRAL CARGO *${resi}* .Jangan lupa Untuk membuat video unboxing jika barang telah sampai untuk menghindari kesalahan dalam pengiriman. Ditunggu orderan selanjutnya, Terima kasih.`,
-        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1000,
       };
 
     case 'DELAY - RANDOM CHECK CHINA':

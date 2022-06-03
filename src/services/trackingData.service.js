@@ -2,6 +2,7 @@ const httpStatus = require('http-status');
 const moment = require('moment');
 const { TrackingData } = require('../models');
 const ApiError = require('../utils/ApiError');
+const rupiah = require('../utils/currencyFormatter');
 
 /**
  * Create a tracking data
@@ -125,7 +126,9 @@ const messageFormatter = (trackingData) => {
         estimatedDate
       ).format(
         'DD MMMM YYYY'
-      )}* dan akan segera diproses pengiriman ke alamat anda. Mohon untuk segera melakukan pelunasan *sisa DP 30%* sebesar *IDR ${remainingDownPaymentAmount}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
+      )}* dan akan segera diproses pengiriman ke alamat anda. Mohon untuk segera melakukan pelunasan *sisa DP 30%* sebesar *IDR ${rupiah(
+        remainingDownPaymentAmount
+      )}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
       break;
 
     case 'BARANG KOMPLIT ITEM & SUDAH CLEAR DP':
