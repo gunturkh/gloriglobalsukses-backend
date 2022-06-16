@@ -87,12 +87,13 @@ const messageFormatter = (trackingData) => {
     delay,
     createdAt,
     estimatedDate,
+    newEstimatedDate,
     remainingDownPaymentAmount,
   } = trackingData;
   let message = '';
   switch (status) {
     case 'SUDAH DIPESAN DAN BARANG READY':
-      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan & sedang dalam proses pengemasan pada tanggal ${moment(
         createdAt
       ).format(
         'DD MMMM YYYY'
@@ -100,7 +101,7 @@ const messageFormatter = (trackingData) => {
       break;
 
     case 'SUDAH DIPESAN DAN BARANG PRODUKSI':
-      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan dan dikemas pada tanggal ${moment(
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan & sedang dalam proses pengemasan pada tanggal ${moment(
         createdAt
       ).format(
         'DD MMMM YYYY'
@@ -116,7 +117,7 @@ const messageFormatter = (trackingData) => {
       break;
 
     case 'BARANG LOADING BATAM - JAKARTA':
-      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* atas *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* dengan resi *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
         estimatedDate
       ).format('DD MMMM YYYY')}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
       break;
@@ -141,6 +142,10 @@ const messageFormatter = (trackingData) => {
 
     case 'DELAY - RANDOM CHECK CHINA':
       message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* akan mengalami kemunduran estimasi tiba di Indonesia dikarenakan adanya *Random Check* di Custom China maka dari itu untuk estimasi selanjutnya akan kami informasikan kembali. Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu. Terima kasih.`;
+      break;
+
+    case 'DELAY - STATUS BARANG OVERLOAD':
+      message = `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* Estimasi awal *${estimatedDate}* mengalami kemunduran Estimasi dikarenakan adanya *Overload Container* dipelabuhan Transit Indonesia. Maka estimasi selanjutnya *${newEstimatedDate}*, Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu informasi selanjutnyya. Terima kasih.`;
       break;
 
     default:

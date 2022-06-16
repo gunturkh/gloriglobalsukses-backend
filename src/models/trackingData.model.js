@@ -60,6 +60,9 @@ const trackingDataSchema = mongoose.Schema(
     estimatedDate: {
       type: Date,
     },
+    newEstimatedDate: {
+      type: Date,
+    },
     remainingDownPaymentAmount: {
       type: Number,
     },
