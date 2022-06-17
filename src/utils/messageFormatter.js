@@ -100,7 +100,11 @@ const messageFormatter = (trackingData) => {
           estimatedDate
         ).format(
           'DD MMMM YYYY'
-        )}* mengalami kemunduran Estimasi dikarenakan adanya *Overload Container* dipelabuhan Transit Indonesia. Maka estimasi selanjutnya *${newEstimatedDate}*, Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu informasi selanjutnyya. Terima kasih.`,
+        )}* mengalami kemunduran Estimasi dikarenakan adanya *Overload Container* dipelabuhan Transit Indonesia. Maka estimasi selanjutnya *${moment(
+          newEstimatedDate
+        ).format(
+          'DD MMMM YYYY'
+        )}*, Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu informasi selanjutnyya. Terima kasih.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
       };
 
