@@ -32,9 +32,7 @@ const messageFormatter = (trackingData) => {
       return {
         message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* sudah dipesan & sedang dalam proses pengemasan pada tanggal ${moment(
           customerOrderDate
-        ).format(
-          'DD MMMM YYYY'
-        )}, sudah dalam proses pengiriman ke Gudang China. Ditunggu informasi selanjutnya. Terima kasih.`,
+        ).format('DD MMMM YYYY')}. Ditunggu informasi selanjutnya. Terima kasih.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
       };
 

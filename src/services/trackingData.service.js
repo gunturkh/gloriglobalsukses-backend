@@ -105,7 +105,7 @@ const messageFormatter = (trackingData) => {
         createdAt
       ).format(
         'DD MMMM YYYY'
-      )}, sudah dalam proses pengiriman ke Gudang China. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`;
+      )}. Mohon maaf atas keterlambatan informasi yang diberikan, ditunggu informasi selanjutnya. Terima kasih.`;
       break;
 
     case 'SUDAH DIKIRIM VENDOR KE GUDANG CHINA':
