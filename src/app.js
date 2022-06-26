@@ -210,7 +210,7 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
             });
             if (trackingDataFoundById) {
               console.log('trackingDataFoundById', trackingDataFoundById);
-              Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true, read: false });
+              Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
               await trackingDataFoundById.save();
             }
           }
