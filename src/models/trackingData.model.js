@@ -108,6 +108,10 @@ const trackingDataSchema = mongoose.Schema(
     history: {
       type: Array,
     },
+    containerNumber : {
+      type: String,
+      default: ''
+    }
   },
   {
     timestamps: true,

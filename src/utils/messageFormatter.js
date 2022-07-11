@@ -58,9 +58,9 @@ const messageFormatter = (trackingData) => {
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 3,
       };
 
-    case 'BARANG LOADING BATAM - JAKARTA':
+    case 'BARANG LOADING CHINA - JAKARTA':
       return {
-        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* dengan resi *${resi}* sudah di loading dan akan tiba di gudang Jakarta dengan estimasi *${moment(
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* dengan resi *${resi}* sudah di loading dengan nomor Container *${containerNumber}* dan akan tiba di gudang Jakarta dengan estimasi *${moment(
           estimatedDate
         ).format('DD MMMM YYYY')}*. Mohon ditunggu informasi selanjutnya. Terima kasih.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 7,
