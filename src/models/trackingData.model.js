@@ -110,7 +110,7 @@ const trackingDataSchema = mongoose.Schema(
     },
     containerNumber : {
       type: String,
-      default: ''
+      default: ' '
     }
   },
   {
