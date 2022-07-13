@@ -19,6 +19,7 @@ const messageFormatter = (trackingData) => {
     status,
     daysToSendReminder,
     setDaysReminderManually,
+    containerNumber
     // setStatusManually,
   } = trackingData;
   switch (status) {
