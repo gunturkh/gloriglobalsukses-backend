@@ -154,7 +154,7 @@ const messageFormatter = (trackingData) => {
         newEstimatedDate
       ).format(
         'DD MMMM YYYY'
-      )}*, Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu informasi selanjutnyya. Terima kasih.`;
+      )}*, Kami segenap perusahaan memohon maaf sebesar besarnya atas kemunduran estimasi tersebut. Mohon ditunggu informasi selanjutnya. Terima kasih.`;
       break;
 
     default:
