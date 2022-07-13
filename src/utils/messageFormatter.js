@@ -19,9 +19,12 @@ const messageFormatter = (trackingData) => {
     status,
     daysToSendReminder,
     setDaysReminderManually,
-    containerNumber
-    // setStatusManually,
+    containerNumber,
+    customStatusMessage,
+    setStatusManually,
   } = trackingData;
+
+  if(!setStatusManually) {
   switch (status) {
     case 'STATUS ORDERAN SUDAH DITERIMA':
       return {
@@ -114,6 +117,12 @@ const messageFormatter = (trackingData) => {
         message: status,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
       };
+    }
+  } else {
+    return {
+        message: customStatusMessage,
+        daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
+    }
   }
 };
 

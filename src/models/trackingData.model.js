@@ -111,6 +111,10 @@ const trackingDataSchema = mongoose.Schema(
     containerNumber : {
       type: String,
       default: ' '
+    },
+    customStatusMessage : {
+      type: String,
+      default: ' '
     }
   },
   {
