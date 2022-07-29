@@ -73,13 +73,13 @@ const messageFormatter = (trackingData) => {
 
     case 'BARANG BELUM KOMPLIT ITEM & BELUM CLEAR DP':
       return {
-        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* dengan resi *${resi}* tiba di Gudang Jakarta  *${cartonAmount}*, tanggal  *${moment(
+        message: `Customer *${name}* yth, kami menginformasikan bahwa barang no *${salesOrder}* dengan item *${item}* dengan resi *${resi}* tiba di Gudang Jakarta *[${cartonAmount}ctn]*, tanggal *${moment(
           estimatedDate
         ).format(
           'DD MMMM YYYY'
         )}* Mohon untuk segera melakukan pelunasan *sisa DP 30%* untuk proses pengiriman barang sebesar *IDR ${rupiah(
           remainingDownPaymentAmount
-        )}*. Wajib mengirimkan bukti transfer ke *Admin Glori*. Demikian untuk kenyamanan bersama & Terima kasih atas kepercayaannya.`,
+        ).replace('Rp','')}*. Wajib mengirimkan bukti transfer ke *Admin Glori*. Demikian untuk kenyamanan bersama & Terima kasih atas kepercayaannya.`,
         daysToSendReminder: setDaysReminderManually ? daysToSendReminder : 1,
       };
 
