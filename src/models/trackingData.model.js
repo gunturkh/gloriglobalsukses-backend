@@ -115,7 +115,10 @@ const trackingDataSchema = mongoose.Schema(
     customStatusMessage : {
       type: String,
       default: ' '
-    }
+    },
+    additionalPhoneNumbers: {
+      type: Array,
+    },
   },
   {
     timestamps: true,

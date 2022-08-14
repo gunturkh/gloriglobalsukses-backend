@@ -9,7 +9,7 @@ const compression = require('compression');
 const cors = require('cors');
 const passport = require('passport');
 const httpStatus = require('http-status');
-const { Client, LocalAuth } = require('whatsapp-web.js');
+const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 const moment = require('moment');
 const cron = require('node-cron');
 const http = require('http');
@@ -195,14 +195,51 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
   console.log('foundTrackingDataForSendingAutomaticMessage found', foundTrackingDataForSendingAutomaticMessage.length);
   if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
     await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
-      const { phone } = trackingData;
+      const { phone, additionalPhoneNumbers, images } = trackingData;
       // eslint-disable-next-line no-undef
       const { message, daysToSendReminder } = messageFormatter(trackingData);
       // console.log({ message, daysToSendReminder });
       const trackingDataFoundById = await TrackingData.findById(trackingData.id);
+
+      if (additionalPhoneNumbers.length > 0) {
+      console.log('additionalPhoneNumbers', additionalPhoneNumbers)
+        for (const phoneNumber of additionalPhoneNumbers) {
+          console.log('phoneNumber', phoneNumber);
+          await client
+            .sendMessage(`${phoneNumber.phone}@c.us`, message)
+            .then(async (response) => {
+              if (images && images.length > 0) {
+                images.forEach(async (image) => {
+                  const media = await MessageMedia.fromUrl(image);
+                  // eslint-disable-next-line no-undef
+                  client.sendMessage(`${phoneNumber.phone}@c.us`, media).then(() => console.log('image sent'));
+                });
+              }
+              if (response.id.fromMe) {
+                console.log({
+                  status: 'success',
+                  message: `Message successfully sent to ${phoneNumber.phone} with message: ${message}`,
+                });
+                if (trackingDataFoundById) {
+                  console.log('trackingDataFoundById', trackingDataFoundById);
+                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
+                  await trackingDataFoundById.save();
+                }
+              }
+            })
+            .catch((err) => console.log(err));
+        }
+      }
       await client
         .sendMessage(`${phone}@c.us`, message)
         .then(async (response) => {
+          if (images && images.length > 0) {
+            images.forEach(async (image) => {
+              const media = await MessageMedia.fromUrl(image);
+              // eslint-disable-next-line no-undef
+              client.sendMessage(`${phone}@c.us`, media).then(() => console.log('image sent'));
+            });
+          }
           if (response.id.fromMe) {
             console.log({
               status: 'success',
@@ -281,7 +318,9 @@ io.on('connection', (socket) => {
       if (client) await client.destroy();
       else await client.destroy();
       await client.initialize();
-    } catch {}
+    } catch(e) {
+      console.log('error when destroy WA Client', e);
+    }
     await client.destroy();
     await client.initialize();
   });

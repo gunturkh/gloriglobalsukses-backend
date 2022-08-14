@@ -10,7 +10,7 @@ const { MessageMedia } = require('whatsapp-web.js');
 const createTrackingData = catchAsync(async (req, res) => {
   let body = req.body.setSendMessageNow ? { ...req.body, sendMessageStatus: true } : req.body;
   const trackingData = await trackingDataService.createTrackingData(body);
-  const { phone, setSendMessageNow, images } = trackingData;
+  const { phone, setSendMessageNow, images, additionalPhoneNumbers } = trackingData;
   console.log('trackingData created', trackingData);
   if (setSendMessageNow) {
     const { message } = messageFormatter(trackingData);
@@ -18,6 +18,35 @@ const createTrackingData = catchAsync(async (req, res) => {
     if (phone === undefined || message === undefined) {
       res.send({ status: 'error', message: 'please enter valid phone and message', data: null });
     } else {
+      if (additionalPhoneNumbers.length > 0) {
+      console.log('additionalPhoneNumbers', additionalPhoneNumbers)
+        for (const phoneNumber of additionalPhoneNumbers) {
+          console.log('phoneNumber', phoneNumber);
+          await client
+            .sendMessage(`${phoneNumber.phone}@c.us`, message)
+            .then(async (response) => {
+              if (images && images.length > 0) {
+                images.forEach(async (image) => {
+                  const media = await MessageMedia.fromUrl(image);
+                  // eslint-disable-next-line no-undef
+                  client.sendMessage(`${phoneNumber.phone}@c.us`, media).then(() => console.log('image sent'));
+                });
+              }
+              if (response.id.fromMe) {
+                console.log({
+                  status: 'success',
+                  message: `Message successfully sent to ${phoneNumber.phone} with message: ${message}`,
+                });
+                if (trackingDataFoundById) {
+                  console.log('trackingDataFoundById', trackingDataFoundById);
+                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
+                  await trackingDataFoundById.save();
+                }
+              }
+            })
+            .catch((err) => console.log(err));
+        }
+      }
       // eslint-disable-next-line no-undef
       client
         .sendMessage(`${phone}@c.us`, message)
@@ -267,7 +296,7 @@ const printTrackingDatatoPDF = catchAsync(async (req, res) => {
 const updateTrackingData = catchAsync(async (req, res) => {
   let body = req.body.setSendMessageNow ? { ...req.body, sendMessageStatus: true } : req.body;
   const trackingData = await trackingDataService.updateTrackingDataById(req.params.trackingDataId, body);
-  const { phone, setSendMessageNow, images } = trackingData;
+  const { phone, setSendMessageNow, images, additionalPhoneNumbers } = trackingData;
   console.log('trackingData update', trackingData);
   if (setSendMessageNow) {
     const { message } = messageFormatter(trackingData);
@@ -275,6 +304,35 @@ const updateTrackingData = catchAsync(async (req, res) => {
     if (phone === undefined || message === undefined) {
       res.send({ status: 'error', message: 'please enter valid phone and message', data: null });
     } else {
+      if (additionalPhoneNumbers.length > 0) {
+      console.log('additionalPhoneNumbers', additionalPhoneNumbers)
+        for (const phoneNumber of additionalPhoneNumbers) {
+          console.log('phoneNumber', phoneNumber);
+          await client
+            .sendMessage(`${phoneNumber.phone}@c.us`, message)
+            .then(async (response) => {
+              if (images && images.length > 0) {
+                images.forEach(async (image) => {
+                  const media = await MessageMedia.fromUrl(image);
+                  // eslint-disable-next-line no-undef
+                  client.sendMessage(`${phoneNumber.phone}@c.us`, media).then(() => console.log('image sent'));
+                });
+              }
+              if (response.id.fromMe) {
+                console.log({
+                  status: 'success',
+                  message: `Message successfully sent to ${phoneNumber.phone} with message: ${message}`,
+                });
+                if (trackingDataFoundById) {
+                  console.log('trackingDataFoundById', trackingDataFoundById);
+                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
+                  await trackingDataFoundById.save();
+                }
+              }
+            })
+            .catch((err) => console.log(err));
+        }
+      }
       // eslint-disable-next-line no-undef
       client
         .sendMessage(`${phone}@c.us`, message)

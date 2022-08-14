@@ -35,6 +35,7 @@ const createTrackingData = {
     cargoName: Joi.string(),
     cartonAmount: Joi.number(),
     itemDetail: Joi.string(),
+    additionalPhoneNumbers: Joi.array(),
     createdAt: Joi.string(),
     updatedAt: Joi.string(),
   }),
@@ -76,6 +77,7 @@ const getTrackingDatas = {
     cargoName: Joi.string(),
     cartonAmount: Joi.number(),
     itemDetail: Joi.string(),
+    additionalPhoneNumbers: Joi.array(),
     createdAt: Joi.string(),
     updatedAt: Joi.string(),
     sortBy: Joi.string(),
@@ -136,6 +138,7 @@ const updateTrackingData = {
       cargoName: Joi.string(),
       cartonAmount: Joi.number(),
       itemDetail: Joi.string(),
+      additionalPhoneNumbers: Joi.array(),
       createdAt: Joi.string(),
       updatedAt: Joi.string(),
     })
