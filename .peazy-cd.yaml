@@ -1,0 +1,61 @@
+configMap:
+  apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: gloriglobalsukses-backend
+  data:
+    "TZ": "Asia/Jakarta"
+    "NODE_ENV": "prod"
+    "PORT": "3000"
+service:
+  kind: Service
+  apiVersion: v1
+  metadata:
+    name: gloriglobalsukses-backend
+  spec:
+    selector:
+      app: gloriglobalsukses-backend
+    ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      name: http-gloriglobalsukses-backend
+    type: NodePort
+deployment:
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: gloriglobalsukses-backend
+    labels:
+      app: gloriglobalsukses-backend
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: gloriglobalsukses-backend
+    template:
+      metadata:
+        labels:
+          app: gloriglobalsukses-backend
+      spec:
+        containers:
+        - name: gloriglobalsukses-backend
+          image: '{DOCKER_IMAGE_URI}'
+          env:
+            - name: TZ
+              valueFrom:
+                configMapKeyRef:
+                  name: gloriglobalsukses-backend
+                  key: TZ
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: gloriglobalsukses-backend
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gloriglobalsukses-backend
+                  key: PORT
+        imagePullSecrets:
+        - name: regcred
