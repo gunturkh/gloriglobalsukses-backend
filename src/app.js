@@ -64,7 +64,7 @@ app.use(compression());
 // enable cors
 app.use(
   cors({
-    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
+    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000', 'http://apps.peazy.dev'],
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   })
 );
@@ -169,9 +169,10 @@ let generatedQR = '';
 let interval;
 
 const io = socketIo(server, {
+  path: '/gloriglobalsukses-backend/socket.io',
   transports: ['polling'],
   cors: {
-    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
+    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000', 'http://apps.peazy.dev'],
   },
 });
 
