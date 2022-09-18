@@ -4,12 +4,13 @@ WORKDIR /usr/src/app
 
 COPY package.json yarn.lock ./
 
+RUN apk update
+RUN apk add chromium
+
 RUN yarn install --pure-lockfile
 
 COPY . .
 
-RUN npm run build
-
 EXPOSE 3000
 
-CMD [ "npm", "start-production" ]
+CMD [ "npm", "run", "start-production" ]
