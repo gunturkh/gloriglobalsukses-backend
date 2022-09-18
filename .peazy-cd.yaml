@@ -5,7 +5,7 @@ configMap:
     name: gloriglobalsukses-backend
   data:
     "TZ": "Asia/Jakarta"
-    "NODE_ENV": "prod"
+    "NODE_ENV": "production"
     "PORT": "3000"
 service:
   kind: Service
