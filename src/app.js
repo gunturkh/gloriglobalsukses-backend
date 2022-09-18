@@ -145,11 +145,11 @@ passport.use('jwt', jwtStrategy);
 
 // limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
-  app.use('/v1/auth', authLimiter);
+  app.use('/gloriglobalsukses-backend/v1/auth', authLimiter);
 }
 
 // v1 api routes
-app.use('/v1', routes);
+app.use('/gloriglobalsukses-backend/v1', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
