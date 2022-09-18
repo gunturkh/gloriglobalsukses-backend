@@ -33,6 +33,7 @@ global.client = new Client({
     headless: true,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+    executablePath: '/usr/bin/chromium-browser',
   },
 });
 global.authed = false;
