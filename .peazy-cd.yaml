@@ -57,5 +57,61 @@ deployment:
                 configMapKeyRef:
                   name: gloriglobalsukses-backend
                   key: PORT
+            - name: MONGODB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-mongodb
+                  key: url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-jwt
+                  key: secret
+            - name: JWT_ACCESS_EXPIRATION_MINUTES
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-jwt
+                  key: access_expiration_minutes
+            - name: JWT_REFRESH_EXPIRATION_DAYS
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-jwt
+                  key: refresh_expiration_days
+            - name: JWT_RESET_PASSWORD_EXPIRATION_MINUTES
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-jwt
+                  key: reset_password_expiration_minutes
+            - name: JWT_VERIFY_EMAIL_EXPIRATION_MINUTES
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-jwt
+                  key: verify_email_expiration_minutes
+
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-smtp
+                  key: host
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-smtp
+                  key: port
+            - name: SMTP_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-smtp
+                  key: username
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-smtp
+                  key: password
+            - name: EMAIL_FROM
+              valueFrom:
+                secretKeyRef:
+                  name: gloriglobalsukses-backend-smtp
+                  key: from
         imagePullSecrets:
         - name: regcred
