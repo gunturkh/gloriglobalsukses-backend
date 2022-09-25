@@ -113,5 +113,9 @@ deployment:
                 secretKeyRef:
                   name: gloriglobalsukses-backend-smtp
                   key: from
+          resources:
+            limits:
+              memory: "1024Mi"
+              cpu: "500m"
         imagePullSecrets:
         - name: regcred
