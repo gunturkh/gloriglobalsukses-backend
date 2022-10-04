@@ -30,7 +30,7 @@ global.client = new Client({
   // authStrategy: new LocalAuth(),
   puppeteer: {
     // for dev make it false, for production make it true
-    headless: true,
+    headless: false,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
   },
@@ -202,7 +202,7 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       const trackingDataFoundById = await TrackingData.findById(trackingData.id);
 
       if (additionalPhoneNumbers.length > 0) {
-      console.log('additionalPhoneNumbers', additionalPhoneNumbers)
+        console.log('additionalPhoneNumbers', additionalPhoneNumbers);
         for (const phoneNumber of additionalPhoneNumbers) {
           console.log('phoneNumber', phoneNumber);
           await client
@@ -222,7 +222,7 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
                 });
                 if (trackingDataFoundById) {
                   console.log('trackingDataFoundById', trackingDataFoundById);
-                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
+                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
                   await trackingDataFoundById.save();
                 }
               }
@@ -247,8 +247,9 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
             });
             if (trackingDataFoundById) {
               console.log('trackingDataFoundById', trackingDataFoundById);
-              Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
+              Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
               await trackingDataFoundById.save();
+              return trackingData;
             }
           }
         })
@@ -318,7 +319,7 @@ io.on('connection', (socket) => {
       if (client) await client.destroy();
       else await client.destroy();
       await client.initialize();
-    } catch(e) {
+    } catch (e) {
       console.log('error when destroy WA Client', e);
     }
     await client.destroy();
