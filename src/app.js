@@ -30,7 +30,7 @@ global.client = new Client({
   // authStrategy: new LocalAuth(),
   puppeteer: {
     // for dev make it false, for production make it true
-    headless: false,
+    headless: true,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
   },
