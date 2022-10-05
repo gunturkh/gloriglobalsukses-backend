@@ -336,10 +336,10 @@ const updateTrackingData = catchAsync(async (req, res) => {
       // eslint-disable-next-line no-undef
       client
         .sendMessage(`${phone}@c.us`, message)
-        .then((response) => {
-          if (response.id.fromMe) {
-            res.send({ status: 'success', message: `Message successfully sent to ${phone}`, data: trackingData });
-          }
+        .then(() => {
+          // if (response.id.fromMe) {
+          //   res.send({ status: 'success', message: `Message successfully sent to ${phone}`, data: trackingData });
+          // }
           if (images && images.length > 0) {
             images.forEach(async (image) => {
               const media = await MessageMedia.fromUrl(image);
