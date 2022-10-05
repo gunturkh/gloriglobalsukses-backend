@@ -19,7 +19,7 @@ const createTrackingData = catchAsync(async (req, res) => {
       res.send({ status: 'error', message: 'please enter valid phone and message', data: null });
     } else {
       if (additionalPhoneNumbers.length > 0) {
-        console.log('additionalPhoneNumbers', additionalPhoneNumbers)
+        console.log('additionalPhoneNumbers', additionalPhoneNumbers);
         for (const phoneNumber of additionalPhoneNumbers) {
           console.log('phoneNumber', phoneNumber);
           await client
@@ -39,7 +39,7 @@ const createTrackingData = catchAsync(async (req, res) => {
                 });
                 if (trackingDataFoundById) {
                   console.log('trackingDataFoundById', trackingDataFoundById);
-                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
+                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
                   await trackingDataFoundById.save();
                 }
               }
@@ -305,7 +305,7 @@ const updateTrackingData = catchAsync(async (req, res) => {
       res.send({ status: 'error', message: 'please enter valid phone and message', data: null });
     } else {
       if (additionalPhoneNumbers.length > 0) {
-        console.log('additionalPhoneNumbers', additionalPhoneNumbers)
+        console.log('additionalPhoneNumbers', additionalPhoneNumbers);
         for (const phoneNumber of additionalPhoneNumbers) {
           console.log('phoneNumber', phoneNumber);
           await client
@@ -323,11 +323,11 @@ const updateTrackingData = catchAsync(async (req, res) => {
                   status: 'success',
                   message: `Message successfully sent to ${phoneNumber.phone} with message: ${message}`,
                 });
-                if (trackingDataFoundById) {
-                  console.log('trackingDataFoundById', trackingDataFoundById);
-                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
-                  await trackingDataFoundById.save();
-                }
+                // if (trackingDataFoundById) {
+                //   console.log('trackingDataFoundById', trackingDataFoundById);
+                //   Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true});
+                //   await trackingDataFoundById.save();
+                // }
               }
             })
             .catch((err) => console.log(err));
