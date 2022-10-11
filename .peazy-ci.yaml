@@ -1,3 +1,6 @@
 production:
   env: production
   namespace: default
+  actions:
+    - action: build
+    - action: deploy

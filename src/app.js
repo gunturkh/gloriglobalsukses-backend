@@ -33,6 +33,7 @@ global.client = new Client({
     headless: true,
     defaultViewport: null,
     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+    executablePath: '/usr/bin/chromium-browser',
   },
 });
 global.authed = false;
@@ -63,7 +64,7 @@ app.use(compression());
 // enable cors
 app.use(
   cors({
-    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
+    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000', 'http://apps.peazy.dev'],
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   })
 );
@@ -145,11 +146,11 @@ passport.use('jwt', jwtStrategy);
 
 // limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
-  app.use('/v1/auth', authLimiter);
+  app.use('/gloriglobalsukses-backend/v1/auth', authLimiter);
 }
 
 // v1 api routes
-app.use('/v1', routes);
+app.use('/gloriglobalsukses-backend/v1', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
@@ -168,9 +169,10 @@ let generatedQR = '';
 let interval;
 
 const io = socketIo(server, {
+  path: '/gloriglobalsukses-backend/socket.io',
   transports: ['polling'],
   cors: {
-    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000'],
+    origin: ['https://gloriglobal-tracker.netlify.app', 'http://localhost:3000', 'http://apps.peazy.dev'],
   },
 });
 
