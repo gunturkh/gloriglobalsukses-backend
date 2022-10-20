@@ -205,7 +205,7 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       // console.log({ message, daysToSendReminder });
       const trackingDataFoundById = await TrackingData.findById(trackingData.id);
 
-      if (additionalPhoneNumbers.length > 0) {
+      if (client && additionalPhoneNumbers.length > 0) {
         console.log('additionalPhoneNumbers', additionalPhoneNumbers);
         for (const phoneNumber of additionalPhoneNumbers) {
           console.log('phoneNumber', phoneNumber);
