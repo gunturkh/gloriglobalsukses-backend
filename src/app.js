@@ -264,6 +264,12 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
         //   })
         //   .catch((err) => console.log(err));
       }
+      if (trackingDataFoundById) {
+        console.log('trackingDataFoundById', trackingDataFoundById);
+        Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
+        await trackingDataFoundById.save();
+        return trackingData;
+      }
     });
   }
 });
