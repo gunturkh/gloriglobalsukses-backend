@@ -208,6 +208,7 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       if (client && additionalPhoneNumbers.length > 0) {
         console.log('additionalPhoneNumbers', additionalPhoneNumbers);
         for (const phoneNumber of additionalPhoneNumbers) {
+          console.log('client exist', !!client);
           console.log('phoneNumber', phoneNumber);
           await client
             .sendMessage(`${phoneNumber.phone}@c.us`, message)
@@ -234,30 +235,33 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
             .catch((err) => console.log(err));
         }
       }
-      await client
-        .sendMessage(`${phone}@c.us`, message)
-        .then(async (response) => {
-          if (images && images.length > 0) {
-            images.forEach(async (image) => {
-              const media = await MessageMedia.fromUrl(image);
-              // eslint-disable-next-line no-undef
-              client.sendMessage(`${phone}@c.us`, media).then(() => console.log('image sent'));
-            });
-          }
-          if (response.id.fromMe) {
-            console.log({
-              status: 'success',
-              message: `Message successfully sent to ${phone} with message: ${message}`,
-            });
-            if (trackingDataFoundById) {
-              console.log('trackingDataFoundById', trackingDataFoundById);
-              Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
-              await trackingDataFoundById.save();
-              return trackingData;
+      if (client) {
+        // console.log('client send message exist', !!client);
+        await client
+          .sendMessage(`${phone}@c.us`, message)
+          .then(async (response) => {
+            if (images && images.length > 0) {
+              images.forEach(async (image) => {
+                const media = await MessageMedia.fromUrl(image);
+                // eslint-disable-next-line no-undef
+                client.sendMessage(`${phone}@c.us`, media).then(() => console.log('image sent'));
+              });
             }
-          }
-        })
-        .catch((err) => console.log(err));
+            if (response.id.fromMe) {
+              console.log({
+                status: 'success',
+                message: `Message successfully sent to ${phone} with message: ${message}`,
+              });
+              if (trackingDataFoundById) {
+                console.log('trackingDataFoundById', trackingDataFoundById);
+                Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
+                await trackingDataFoundById.save();
+                return trackingData;
+              }
+            }
+          })
+          .catch((err) => console.log(err));
+      }
     });
   }
 });
