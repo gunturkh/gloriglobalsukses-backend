@@ -14,16 +14,16 @@ mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
 const exitHandler = () => {
   if (server) {
     // eslint-disable-next-line no-undef
-    if (client) client.destroy();
+    // if (client) client.destroy();
     server.close(() => {
       logger.info('Server closed');
       process.exit(1);
     });
   } else {
     // eslint-disable-next-line no-undef
-    if (client) client.destroy();
+    // if (client) client.destroy();
     // eslint-disable-next-line no-undef
-    else client.destroy();
+    // else client.destroy();
     process.exit(1);
   }
 };
@@ -41,9 +41,9 @@ process.on('SIGTERM', () => {
   if (server) {
     server.close();
     // eslint-disable-next-line no-undef
-    if (client) client.destroy();
+    // if (client) client.destroy();
     // eslint-disable-next-line no-undef
-    else client.destroy();
+    // else client.destroy();
   }
 });
 
@@ -51,14 +51,14 @@ process.on('SIGINT', () => {
   logger.info('(SIGINT) Shutting down...');
   if (server) {
     // eslint-disable-next-line no-undef
-    if (client) client.destroy();
+    // if (client) client.destroy();
     // eslint-disable-next-line no-undef
-    else client.destroy();
+    // else client.destroy();
     process.exit(0);
   }
   // eslint-disable-next-line no-undef
-  if (client) client.destroy();
+  // if (client) client.destroy();
   // eslint-disable-next-line no-undef
-  else client.destroy();
+  // else client.destroy();
   process.exit(0);
 });

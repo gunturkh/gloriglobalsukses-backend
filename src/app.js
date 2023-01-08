@@ -1,6 +1,21 @@
 /* eslint-disable no-console */
 /* eslint-disable no-undef */
 const express = require('express');
+const {
+  AnyMessageContent,
+  Browsers,
+  delay,
+  DisconnectReason,
+  fetchLatestBaileysVersion,
+  isJidBroadcast,
+  makeCacheableSignalKeyStore,
+  makeInMemoryStore,
+  MessageRetryMap,
+  useMultiFileAuthState,
+  default: makeWASocket,
+} = require('@adiwajshing/baileys');
+const logger = require('pino')();
+const { Boom } = require('@hapi/boom');
 // const fs = require('fs');
 const helmet = require('helmet');
 const xss = require('xss-clean');
@@ -26,16 +41,16 @@ const messageFormatter = require('./utils/messageFormatter');
 // const { messageFormatter } = require('./services/trackingData.service');
 
 process.title = 'whatsapp-node-api';
-global.client = new Client({
-  // authStrategy: new LocalAuth(),
-  puppeteer: {
-    // for dev make it false, for production make it true
-    headless: true,
-    defaultViewport: null,
-    args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
-    // executablePath: '/usr/bin/chromium-browser',
-  },
-});
+// global.client = new Client({
+//   // authStrategy: new LocalAuth(),
+//   puppeteer: {
+//     // for dev make it false, for production make it true
+//     headless: true,
+//     defaultViewport: null,
+//     args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+//     // executablePath: '/usr/bin/chromium-browser',
+//   },
+// });
 global.authed = false;
 const app = express();
 
@@ -88,11 +103,169 @@ app.options('*', cors());
 // task.start();
 
 // whatsapp web client
+const useStore = !process.argv.includes('--no-store');
+const doReplies = !process.argv.includes('--no-reply');
+// external map to store retry counts of messages when decryption/encryption fails
+// keep this out of the socket itself, so as to prevent a message decryption/encryption loop across socket restarts
+const msgRetryCounterMap = {};
+const store = useStore ? makeInMemoryStore({}) : undefined;
+// store.readFromFile('./baileys_store_multi.json');
+// // save every 10s
+// setInterval(() => {
+//   store.writeToFile('./baileys_store_multi.json');
+// }, 10000);
 
-client.on('auth_failure', () => {
-  console.log('AUTH Failed !');
-  process.exit();
-});
+const startSock = async () => {
+  const { state, saveCreds } = await useMultiFileAuthState('baileys_auth_info');
+  // fetch latest version of WA Web
+  const { version, isLatest } = await fetchLatestBaileysVersion();
+  console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
+
+  const sock = makeWASocket({
+    version,
+    printQRInTerminal: true,
+    auth: {
+      creds: state.creds,
+      /** caching makes the store faster to send/recv messages */
+      keys: makeCacheableSignalKeyStore(state.keys, logger),
+    },
+    msgRetryCounterMap,
+    generateHighQualityLinkPreview: true,
+    browser: Browsers.appropriate('Desktop'),
+    syncFullHistory: true,
+    // ignore all broadcast messages -- to receive the same
+    // comment the line below out
+    shouldIgnoreJid: (jid) => isJidBroadcast(jid),
+    // implement to handle retries
+    getMessage: async (key) => {
+      // if (store) {
+      //   const msg = await store.loadMessage(key.remoteJid, key.id);
+      //   return msg.message || undefined;
+      // }
+
+      // only if store is present
+      return {
+        conversation: 'hello',
+      };
+    },
+  });
+
+  // store.bind(sock.ev);
+
+  const sendMessageWTyping = async (msg, jid) => {
+    await sock.presenceSubscribe(jid);
+    await delay(500);
+
+    await sock.sendPresenceUpdate('composing', jid);
+    await delay(2000);
+
+    await sock.sendPresenceUpdate('paused', jid);
+
+    await sock.sendMessage(jid, msg);
+  };
+
+  // the process function lets you process all events that just occurred
+  // efficiently in a batch
+  sock.ev.process(
+    // events is a map for event name => event data
+    async (events) => {
+      // something about the connection changed
+      // maybe it closed, or we received all offline message or connection opened
+      if (events['connection.update']) {
+        const update = events['connection.update'];
+        const { connection, lastDisconnect, qr } = update;
+        if (connection === 'close') {
+          // reconnect if not logged out
+          if (lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) {
+            startSock();
+          } else {
+            console.log('Connection closed. You are logged out.');
+          }
+        }
+        console.log('qr from WA', qr);
+        generatedQR = qr;
+
+        console.log('connection update', update);
+      }
+
+      // credentials updated -- save them
+      if (events['creds.update']) {
+        await saveCreds();
+      }
+
+      if (events.call) {
+        console.log('recv call event', events.call);
+      }
+
+      // history received
+      if (events['messaging-history.set']) {
+        const { chats, contacts, messages, isLatest } = events['messaging-history.set'];
+        console.log(
+          `recv ${chats.length} chats, ${contacts.length} contacts, ${messages.length} msgs (is latest: ${isLatest})`
+        );
+      }
+
+      // received a new message
+      // if (events['messages.upsert']) {
+      //   const upsert = events['messages.upsert'];
+      //   console.log('recv messages ', JSON.stringify(upsert, undefined, 2));
+
+      //   if (upsert.type === 'notify') {
+      //     for (const msg of upsert.messages) {
+      //       if (!msg.key.fromMe && doReplies) {
+      //         console.log('replying to', msg.key.remoteJid);
+      //         await sock.readMessages([msg.key]);
+      //         await sendMessageWTyping({ text: 'Hello there!' }, msg.key.remoteJid);
+      //       }
+      //     }
+      //   }
+      // }
+
+      // messages updated like status delivered, message deleted etc.
+      if (events['messages.update']) {
+        console.log(events['messages.update']);
+      }
+
+      if (events['message-receipt.update']) {
+        console.log(events['message-receipt.update']);
+      }
+
+      if (events['messages.reaction']) {
+        console.log(events['messages.reaction']);
+      }
+
+      if (events['presence.update']) {
+        console.log(events['presence.update']);
+      }
+
+      if (events['chats.update']) {
+        console.log(events['chats.update']);
+      }
+
+      if (events['contacts.update']) {
+        for (const contact of events['contacts.update']) {
+          if (typeof contact.imgUrl !== 'undefined') {
+            const newUrl = contact.imgUrl === null ? null : await sock.profilePictureUrl(contact.id).catch(() => null);
+            console.log(`contact ${contact.id} has a new profile pic: ${newUrl}`);
+          }
+        }
+      }
+
+      if (events['chats.delete']) {
+        console.log('chats deleted ', events['chats.delete']);
+      }
+    }
+  );
+
+  return sock;
+};
+
+startSock();
+
+// client.on('auth_failure', () => {
+//   console.log('AUTH Failed !');
+//   process.exit();
+// });
 
 const checkTrackingDataTask = cron.schedule('*/60 * * * *', async () => {
   console.log(`checking tracking data read status every 15 minutes => ${new Date()}`);
@@ -116,28 +289,28 @@ const checkTrackingDataTask = cron.schedule('*/60 * * * *', async () => {
 
 checkTrackingDataTask.start();
 
-client.on('change_state', (state) => {
-  console.log('CHANGE STATE', state);
-});
+// client.on('change_state', (state) => {
+//   console.log('CHANGE STATE', state);
+// });
 
-client.on('message_ack', (msg, ack) => {
-  /*
-      == ACK VALUES ==
-      ACK_ERROR: -1
-      ACK_PENDING: 0
-      ACK_SERVER: 1
-      ACK_DEVICE: 2
-      ACK_READ: 3
-      ACK_PLAYED: 4
-  */
+// client.on('message_ack', (msg, ack) => {
+//   /*
+//       == ACK VALUES ==
+//       ACK_ERROR: -1
+//       ACK_PENDING: 0
+//       ACK_SERVER: 1
+//       ACK_DEVICE: 2
+//       ACK_READ: 3
+//       ACK_PLAYED: 4
+//   */
 
-  if (ack === 3) {
-    // The message was read
-    console.log('Message read!');
-  }
-});
+//   if (ack === 3) {
+//     // The message was read
+//     console.log('Message read!');
+//   }
+// });
 
-client.initialize();
+// client.initialize();
 // task.start();
 
 // jwt authentication
@@ -205,65 +378,65 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
       // console.log({ message, daysToSendReminder });
       const trackingDataFoundById = await TrackingData.findById(trackingData.id);
 
-      const state = (await !!client) ? client.getState() : null;
-      if (client && additionalPhoneNumbers.length > 0 && state) {
-        console.log('additionalPhoneNumbers', additionalPhoneNumbers);
-        console.log('client state', state);
-        for (const phoneNumber of additionalPhoneNumbers) {
-          // console.log('client exist', !!client);
-          console.log('phoneNumber', phoneNumber);
-          await client
-            .sendMessage(`${phoneNumber.phone}@c.us`, message)
-            .then(async (response) => {
-              if (images && images.length > 0) {
-                images.forEach(async (image) => {
-                  const media = await MessageMedia.fromUrl(image);
-                  // eslint-disable-next-line no-undef
-                  client.sendMessage(`${phoneNumber.phone}@c.us`, media).then(() => console.log('image sent'));
-                });
-              }
-              if (response.id.fromMe) {
-                console.log({
-                  status: 'success',
-                  message: `Message successfully sent to ${phoneNumber.phone} with message: ${message}`,
-                });
-                if (trackingDataFoundById) {
-                  console.log('trackingDataFoundById', trackingDataFoundById);
-                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
-                  await trackingDataFoundById.save();
-                }
-              }
-            })
-            .catch((err) => console.log(err));
-        }
-      }
-      if (client && state) {
-        // console.log('client send message exist', !!client);
-        await client
-          .sendMessage(`${phone}@c.us`, message)
-          .then(async (response) => {
-            if (images && images.length > 0) {
-              images.forEach(async (image) => {
-                const media = await MessageMedia.fromUrl(image);
-                // eslint-disable-next-line no-undef
-                client.sendMessage(`${phone}@c.us`, media).then(() => console.log('image sent'));
-              });
-            }
-            if (response.id.fromMe) {
-              console.log({
-                status: 'success',
-                message: `Message successfully sent to ${phone} with message: ${message}`,
-              });
-              if (trackingDataFoundById) {
-                console.log('trackingDataFoundById', trackingDataFoundById);
-                Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
-                await trackingDataFoundById.save();
-                return trackingData;
-              }
-            }
-          })
-          .catch((err) => console.log(err));
-      }
+      // const state = (await !!client) ? client.getState() : null;
+      // if (client && additionalPhoneNumbers.length > 0 && state) {
+      //   console.log('additionalPhoneNumbers', additionalPhoneNumbers);
+      //   console.log('client state', state);
+      //   for (const phoneNumber of additionalPhoneNumbers) {
+      //     // console.log('client exist', !!client);
+      //     console.log('phoneNumber', phoneNumber);
+      //     await client
+      //       .sendMessage(`${phoneNumber.phone}@c.us`, message)
+      //       .then(async (response) => {
+      //         if (images && images.length > 0) {
+      //           images.forEach(async (image) => {
+      //             const media = await MessageMedia.fromUrl(image);
+      //             // eslint-disable-next-line no-undef
+      //             client.sendMessage(`${phoneNumber.phone}@c.us`, media).then(() => console.log('image sent'));
+      //           });
+      //         }
+      //         if (response.id.fromMe) {
+      //           console.log({
+      //             status: 'success',
+      //             message: `Message successfully sent to ${phoneNumber.phone} with message: ${message}`,
+      //           });
+      //           if (trackingDataFoundById) {
+      //             console.log('trackingDataFoundById', trackingDataFoundById);
+      //             Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
+      //             await trackingDataFoundById.save();
+      //           }
+      //         }
+      //       })
+      //       .catch((err) => console.log(err));
+      //   }
+      // }
+      // if (client && state) {
+      //   // console.log('client send message exist', !!client);
+      //   await client
+      //     .sendMessage(`${phone}@c.us`, message)
+      //     .then(async (response) => {
+      //       if (images && images.length > 0) {
+      //         images.forEach(async (image) => {
+      //           const media = await MessageMedia.fromUrl(image);
+      //           // eslint-disable-next-line no-undef
+      //           client.sendMessage(`${phone}@c.us`, media).then(() => console.log('image sent'));
+      //         });
+      //       }
+      //       if (response.id.fromMe) {
+      //         console.log({
+      //           status: 'success',
+      //           message: `Message successfully sent to ${phone} with message: ${message}`,
+      //         });
+      //         if (trackingDataFoundById) {
+      //           console.log('trackingDataFoundById', trackingDataFoundById);
+      //           Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
+      //           await trackingDataFoundById.save();
+      //           return trackingData;
+      //         }
+      //       }
+      //     })
+      //     .catch((err) => console.log(err));
+      // }
     });
   }
 });
@@ -275,7 +448,8 @@ io.on('connection', (socket) => {
     // Emitting a new message. Will be consumed by the client
     // socket.broadcast.emit('FromAPI', { data: generatedQR, message: 'qr code' });
     if (authed) {
-      io.emit('FromAPI', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
+      // io.emit('FromAPI', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
+      io.emit('FromAPI', { authed, data: generatedQR, message: 'authenticated', clientInfo: undefined });
       // console.log('getQRAndEmit', { authed, data: generatedQR, message: 'authenticated', clientInfo: client.info });
     } else if (!authed) {
       io.emit('FromAPI', { authed, data: generatedQR, message: 'qr code', clientInfo: null });
@@ -293,48 +467,48 @@ io.on('connection', (socket) => {
     await io.emit('ClientInfo', {});
   });
 
-  client.on('authenticated', async () => {
-    console.log('AUTH!');
-    authed = true;
-    await io.emit('FromAPI', { data: '', message: 'authenticated' });
-  });
+  // client.on('authenticated', async () => {
+  //   console.log('AUTH!');
+  //   authed = true;
+  //   await io.emit('FromAPI', { data: '', message: 'authenticated' });
+  // });
 
-  client.on('disconnected', async (reason) => {
-    console.log('Client was logged out', reason);
-    await io.emit('ClientInfo', {});
-  });
+  // client.on('disconnected', async (reason) => {
+  //   console.log('Client was logged out', reason);
+  //   await io.emit('ClientInfo', {});
+  // });
 
-  client.on('ready', () => {
-    console.log('Client is ready!');
-    // Schedule tasks to be run on the server.
-    cronTask.start();
-  });
+  // client.on('ready', () => {
+  //   console.log('Client is ready!');
+  //   // Schedule tasks to be run on the server.
+  //   cronTask.start();
+  // });
 
-  client.on('qr', async (qr) => {
-    console.log('qr from WA', qr);
-    generatedQR = qr;
-    // await socket.broadcast.emit('FromAPI', { data: qr, message: 'qr code' });
-    // await socket.broadcast.emit('ClientInfo', {});
-  });
+  // client.on('qr', async (qr) => {
+  //   console.log('qr from WA', qr);
+  //   generatedQR = qr;
+  //   // await socket.broadcast.emit('FromAPI', { data: qr, message: 'qr code' });
+  //   // await socket.broadcast.emit('ClientInfo', {});
+  // });
   socket.on('disconnect', () => {
     console.log('Client disconnected');
     clearInterval(interval);
   });
-  client.on('disconnected', async (reason) => {
-    console.log('Client was logged out inside socket', reason);
-    cronTask.stop();
-    checkTrackingDataTask.stop();
-    authed = false;
-    try {
-      if (client) await client.destroy();
-      else await client.destroy();
-      await client.initialize();
-    } catch (e) {
-      console.log('error when destroy WA Client', e);
-    }
-    await client.destroy();
-    await client.initialize();
-  });
+  // client.on('disconnected', async (reason) => {
+  //   console.log('Client was logged out inside socket', reason);
+  //   cronTask.stop();
+  //   checkTrackingDataTask.stop();
+  //   authed = false;
+  //   try {
+  //     if (client) await client.destroy();
+  //     else await client.destroy();
+  //     await client.initialize();
+  //   } catch (e) {
+  //     console.log('error when destroy WA Client', e);
+  //   }
+  //   await client.destroy();
+  //   await client.initialize();
+  // });
 });
 
 server.listen(process.env.PORT, () => {
