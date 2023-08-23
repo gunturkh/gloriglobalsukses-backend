@@ -1,13 +1,12 @@
 diff --git a/node_modules/whatsapp-web.js/src/Client.js b/node_modules/whatsapp-web.js/src/Client.js
-index 490b70d..f21fa80 100644
+index 490b70d..f6e6455 100644
 --- a/node_modules/whatsapp-web.js/src/Client.js
 +++ b/node_modules/whatsapp-web.js/src/Client.js
-@@ -172,7 +172,8 @@ class Client extends EventEmitter {
+@@ -172,7 +172,7 @@ class Client extends EventEmitter {
              }
          );
  
 -        const INTRO_IMG_SELECTOR = '[data-testid="intro-md-beta-logo-dark"], [data-testid="intro-md-beta-logo-light"], [data-asset-intro-image-light="true"], [data-asset-intro-image-dark="true"]';
-+        // const INTRO_IMG_SELECTOR = '[data-testid="intro-md-beta-logo-dark"], [data-testid="intro-md-beta-logo-light"], [data-asset-intro-image-light="true"], [data-asset-intro-image-dark="true"]';
 +        const INTRO_IMG_SELECTOR = "[data-icon='chat']";
          const INTRO_QRCODE_SELECTOR = 'div[data-ref] canvas';
  
