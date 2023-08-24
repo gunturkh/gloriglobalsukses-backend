@@ -21,18 +21,20 @@ const { authLimiter } = require('./middlewares/rateLimiter');
 const routes = require('./routes/v1');
 const { errorConverter, errorHandler } = require('./middlewares/error');
 const ApiError = require('./utils/ApiError');
-const { QR, TrackingData } = require('./models');
+const { TrackingData } = require('./models');
 const messageFormatter = require('./utils/messageFormatter');
 // const { messageFormatter } = require('./services/trackingData.service');
 
 process.title = 'whatsapp-node-api';
 global.client = new Client({
-  // authStrategy: new LocalAuth(),
+  authStrategy: new LocalAuth(),
   puppeteer: {
     // for dev make it false, for production make it true
     headless: true,
     defaultViewport: null,
-    args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+    // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    authStrategy: new LocalAuth(),
     // executablePath: '/usr/bin/chromium-browser',
   },
 });
