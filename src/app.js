@@ -9,11 +9,13 @@ const compression = require('compression');
 const cors = require('cors');
 const passport = require('passport');
 const httpStatus = require('http-status');
-const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
+const { Client, RemoteAuth, MessageMedia } = require('whatsapp-web.js');
 const moment = require('moment');
 const cron = require('node-cron');
 const http = require('http');
 const socketIo = require('socket.io');
+const { MongoStore } = require('wwebjs-mongo');
+const mongoose = require('mongoose');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -26,18 +28,28 @@ const messageFormatter = require('./utils/messageFormatter');
 // const { messageFormatter } = require('./services/trackingData.service');
 
 process.title = 'whatsapp-node-api';
-global.client = new Client({
-  authStrategy: new LocalAuth(),
-  puppeteer: {
-    // for dev make it false, for production make it true
-    headless: true,
-    defaultViewport: null,
-    // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    authStrategy: new LocalAuth(),
-    // executablePath: '/usr/bin/chromium-browser',
-  },
+// Load the session data
+
+global.client = undefined;
+mongoose.connect(process.env.MONGODB_URL).then(() => {
+  const store = new MongoStore({ mongoose });
+  global.client = new Client({
+    authStrategy: new RemoteAuth({
+      store,
+      backupSyncIntervalMs: 300000,
+    }),
+    puppeteer: {
+      // for dev make it false, for production make it true
+      headless: true,
+      defaultViewport: null,
+      // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    },
+  });
+
+  client.initialize();
 });
+
 global.authed = false;
 const app = express();
 
@@ -91,10 +103,33 @@ app.options('*', cors());
 
 // whatsapp web client
 
-client.on('auth_failure', () => {
-  console.log('AUTH Failed !');
-  process.exit();
-});
+if (client) {
+  client.on('auth_failure', () => {
+    console.log('AUTH Failed !');
+    process.exit();
+  });
+
+  client.on('change_state', (state) => {
+    console.log('CHANGE STATE', state);
+  });
+
+  client.on('message_ack', (msg, ack) => {
+    /*
+        == ACK VALUES ==
+        ACK_ERROR: -1
+        ACK_PENDING: 0
+        ACK_SERVER: 1
+        ACK_DEVICE: 2
+        ACK_READ: 3
+        ACK_PLAYED: 4
+    */
+
+    if (ack === 3) {
+      // The message was read
+      console.log('Message read!');
+    }
+  });
+}
 
 const checkTrackingDataTask = cron.schedule('*/60 * * * *', async () => {
   console.log(`checking tracking data read status every 15 minutes => ${new Date()}`);
@@ -118,28 +153,6 @@ const checkTrackingDataTask = cron.schedule('*/60 * * * *', async () => {
 
 checkTrackingDataTask.start();
 
-client.on('change_state', (state) => {
-  console.log('CHANGE STATE', state);
-});
-
-client.on('message_ack', (msg, ack) => {
-  /*
-      == ACK VALUES ==
-      ACK_ERROR: -1
-      ACK_PENDING: 0
-      ACK_SERVER: 1
-      ACK_DEVICE: 2
-      ACK_READ: 3
-      ACK_PLAYED: 4
-  */
-
-  if (ack === 3) {
-    // The message was read
-    console.log('Message read!');
-  }
-});
-
-client.initialize();
 // task.start();
 
 // jwt authentication
