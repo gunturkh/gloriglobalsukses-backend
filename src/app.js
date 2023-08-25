@@ -9,13 +9,11 @@ const compression = require('compression');
 const cors = require('cors');
 const passport = require('passport');
 const httpStatus = require('http-status');
-const { Client, RemoteAuth, MessageMedia } = require('whatsapp-web.js');
+const { MessageMedia } = require('whatsapp-web.js');
 const moment = require('moment');
 const cron = require('node-cron');
 const http = require('http');
 const socketIo = require('socket.io');
-const { MongoStore } = require('wwebjs-mongo');
-const mongoose = require('mongoose');
 const config = require('./config/config');
 const morgan = require('./config/morgan');
 const { jwtStrategy } = require('./config/passport');
@@ -31,24 +29,8 @@ process.title = 'whatsapp-node-api';
 // Load the session data
 
 global.client = undefined;
-mongoose.connect(process.env.MONGODB_URL).then(() => {
-  const store = new MongoStore({ mongoose });
-  global.client = new Client({
-    authStrategy: new RemoteAuth({
-      store,
-      backupSyncIntervalMs: 300000,
-    }),
-    puppeteer: {
-      // for dev make it false, for production make it true
-      headless: true,
-      defaultViewport: null,
-      // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    },
-  });
-
-  client.initialize();
-});
+// mongoose.connect(process.env.MONGODB_URL).then(() => {
+// });
 
 global.authed = false;
 const app = express();

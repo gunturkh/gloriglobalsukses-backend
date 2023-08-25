@@ -1,14 +1,33 @@
 const mongoose = require('mongoose');
+const { Client, RemoteAuth } = require('whatsapp-web.js');
+const { MongoStore } = require('wwebjs-mongo');
 const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 
 let server;
-mongoose.connect(config.mongoose.url, config.mongoose.options).then(() => {
+mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
   logger.info('Connected to MongoDB');
   // server = app.listen(config.port, () => {
   //   logger.info(`Listening to port ${config.port}`);
   // });
+
+  const store = new MongoStore({ mongoose });
+  global.client = new Client({
+    authStrategy: new RemoteAuth({
+      store,
+      backupSyncIntervalMs: 300000,
+    }),
+    puppeteer: {
+      // for dev make it false, for production make it true
+      headless: true,
+      defaultViewport: null,
+      // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    },
+  });
+
+  client.initialize();
 });
 
 const exitHandler = () => {
