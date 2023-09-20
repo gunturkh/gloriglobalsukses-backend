@@ -1,5 +1,5 @@
 diff --git a/node_modules/whatsapp-web.js/src/Client.js b/node_modules/whatsapp-web.js/src/Client.js
-index 490b70d..6ae95bc 100644
+index 490b70d..c00a25a 100644
 --- a/node_modules/whatsapp-web.js/src/Client.js
 +++ b/node_modules/whatsapp-web.js/src/Client.js
 @@ -172,7 +172,7 @@ class Client extends EventEmitter {
@@ -7,7 +7,7 @@ index 490b70d..6ae95bc 100644
          );
  
 -        const INTRO_IMG_SELECTOR = '[data-testid="intro-md-beta-logo-dark"], [data-testid="intro-md-beta-logo-light"], [data-asset-intro-image-light="true"], [data-asset-intro-image-dark="true"]';
-+        const INTRO_IMG_SELECTOR = '[data-icon=\'chat\']';
++        const INTRO_IMG_SELECTOR = 'div[role="textbox"]';
          const INTRO_QRCODE_SELECTOR = 'div[data-ref] canvas';
  
          // Checks which selector appears first

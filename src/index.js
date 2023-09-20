@@ -23,7 +23,7 @@ mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
       headless: true,
       defaultViewport: null,
       // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--single-process', '--no-zygote'],
     },
   });
 
