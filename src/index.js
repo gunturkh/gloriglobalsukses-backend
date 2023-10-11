@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Client, RemoteAuth } = require('whatsapp-web.js');
 const { MongoStore } = require('wwebjs-mongo');
-const app = require('./app');
+// const app = require('./app');
 const config = require('./config/config');
 const logger = require('./config/logger');
 
@@ -27,6 +27,7 @@ mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
     },
   });
 
+  // eslint-disable-next-line no-undef
   client.initialize();
 });
 

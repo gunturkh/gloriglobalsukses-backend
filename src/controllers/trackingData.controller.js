@@ -37,11 +37,11 @@ const createTrackingData = catchAsync(async (req, res) => {
                   status: 'success',
                   message: `Message successfully sent to ${phoneNumber.phone} with message: ${message}`,
                 });
-                if (trackingDataFoundById) {
-                  console.log('trackingDataFoundById', trackingDataFoundById);
-                  Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
-                  await trackingDataFoundById.save();
-                }
+                // if (trackingDataFoundById) {
+                //   console.log('trackingDataFoundById', trackingDataFoundById);
+                //   Object.assign(trackingDataFoundById, { ...trackingData, sendMessageStatus: true });
+                //   await trackingDataFoundById.save();
+                // }
               }
             })
             .catch((err) => console.log(err));
