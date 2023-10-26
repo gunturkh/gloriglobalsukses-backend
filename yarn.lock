@@ -8237,9 +8237,10 @@ webidl-conversions@^6.1.0:
   resolved "https://registry.yarnpkg.com/webidl-conversions/-/webidl-conversions-6.1.0.tgz#9111b4d7ea80acd40f5270d666621afa78b69514"
   integrity sha512-qBIvFLGiBpLjfwmYAaHPXsn+ho5xZnGvyGvsarywGNc8VyQJUMHJ8OBKGGrPER0okBeMDaan4mNBlgBROxuI8w==
 
-"whatsapp-web.js@git+https://github.com/pedroslopez/whatsapp-web.js":
-  version "1.22.2-alpha.0"
-  resolved "git+https://github.com/pedroslopez/whatsapp-web.js#152f0a64cdffdfb4d638043f537f87b2a6ebc492"
+whatsapp-web.js@^1.23.0:
+  version "1.23.0"
+  resolved "https://registry.yarnpkg.com/whatsapp-web.js/-/whatsapp-web.js-1.23.0.tgz#e9d57bfbef282f8c97eb6ab9ae66859d047a1c16"
+  integrity sha512-88UwvuLCaak4HmSCsp2/JY00p0qYFVQ0rPM6VPPGyjfSmRUsI/UKGjPA/p4FnC+Dygwx7g88K3iB7UdMXkQKhw==
   dependencies:
     "@pedroslopez/moduleraid" "^5.0.2"
     fluent-ffmpeg "^2.1.2"
