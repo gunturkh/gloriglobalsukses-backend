@@ -193,7 +193,7 @@ const cronTask = cron.schedule('10,20,30,40,50 * * * * * *', async () => {
     sendMessageStatus: false,
     setSendMessageNow: false,
   });
-  console.log('foundTrackingDataForSendingAutomaticMessage found', foundTrackingDataForSendingAutomaticMessage.length, "SO: ", foundTrackingDataForSendingAutomaticMessage.map((item) => item.salesOrder));
+  console.log('foundTrackingDataForSendingAutomaticMessage found', foundTrackingDataForSendingAutomaticMessage.length, "SO: ", foundTrackingDataForSendingAutomaticMessage.length > 0 ? foundTrackingDataForSendingAutomaticMessage.map((item) => item.salesOrder) : "-");
   if (foundTrackingDataForSendingAutomaticMessage.length > 0) {
     await foundTrackingDataForSendingAutomaticMessage.forEach(async (trackingData) => {
       const { phone, additionalPhoneNumbers, images } = trackingData;
