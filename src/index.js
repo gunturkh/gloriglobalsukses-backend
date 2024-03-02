@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Client, RemoteAuth } = require('whatsapp-web.js');
+const { Client, RemoteAuth, NoAuth } = require('whatsapp-web.js');
 const { MongoStore } = require('wwebjs-mongo');
 const app = require('./app');
 const config = require('./config/config');
@@ -14,10 +14,11 @@ mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
 
   const store = new MongoStore({ mongoose });
   global.client = new Client({
-    authStrategy: new RemoteAuth({
-      store,
-      backupSyncIntervalMs: 300000,
-    }),
+    authStrategy: new NoAuth(), // to minimize sudden egress cost spike when RemoteAuth giving zliberror on server
+    // authStrategy: new RemoteAuth({
+    //   store,
+    //   backupSyncIntervalMs: 300000,
+    // }),
     puppeteer: {
       // for dev make it false, for production make it true
       headless: true,
