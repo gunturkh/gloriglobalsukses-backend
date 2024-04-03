@@ -13,6 +13,7 @@ mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
   // });
 
   const store = new MongoStore({ mongoose });
+  const wwebVersion = '2.2407.3';
   global.client = new Client({
     authStrategy: new NoAuth(), // to minimize sudden egress cost spike when RemoteAuth giving zliberror on server
     // authStrategy: new RemoteAuth({
@@ -26,6 +27,10 @@ mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
       // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--incognito', '--single-process', '--no-zygote'],
     },
+    webVersionCache: {
+      type: 'remote',
+      remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${wwebVersion}.html`,
+  },
   });
 
   client.initialize();
