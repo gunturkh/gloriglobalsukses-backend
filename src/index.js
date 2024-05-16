@@ -13,7 +13,7 @@ mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
   // });
 
   const store = new MongoStore({ mongoose });
-  const wwebVersion = '2.2407.3';
+  const wwebVersion = '2.2412.54';
   global.client = new Client({
     authStrategy: new NoAuth(), // to minimize sudden egress cost spike when RemoteAuth giving zliberror on server
     // authStrategy: new RemoteAuth({
