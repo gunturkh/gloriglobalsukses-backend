@@ -24,6 +24,7 @@ mongoose.connect(process.env.MONGODB_URL, config.mongoose.options).then(() => {
       // for dev make it false, for production make it true
       headless: true,
       defaultViewport: null,
+      executablePath: '/app/.chrome-for-testing/chrome-linux64/chrome',
       // args: ['--incognito', '--no-sandbox', '--single-process', '--no-zygote'],
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--incognito', '--single-process', '--no-zygote'],
     },
