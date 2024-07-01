@@ -25,7 +25,8 @@
     "docker:dev": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
     "docker:test": "docker-compose -f docker-compose.yml -f docker-compose.test.yml up",
     "start-production": "node src/index.js",
-    "postinstall": "patch-package && node node_modules/puppeteer/install.js"
+    "postinstall": "patch-package",
+    "heroku-postbuild": "node node_modules/puppeteer/install.js"
   },
   "keywords": [
     "node",
